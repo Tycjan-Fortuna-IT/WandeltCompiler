@@ -1,8 +1,14 @@
 #include <iostream>
 
-#include <Logger/Logger.hpp>
+#include <Core/FileSystem/FileSystem.hpp>
 
-int main()
+using namespace WandeltCore;
+
+BEGIN_CAST_FORMATTER(std::filesystem::path);
+FORMATTER_CAST(std::string, value.string());
+END_CAST_FORMATTER;
+
+int main(int argc, char* argv[])
 {
 	const SW::LogSystemSpecification spec = {
 	    .LogFileName              = "logs/wandelt.log",
@@ -14,7 +20,15 @@ int main()
 
 	SW::LogSystem::Initialize(spec);
 
-	SYSTEM_DEBUG("Hello, World!");
+	ASSERT(argc > 1, "No input file provided.");
+
+	std::filesystem::path filepath = std::filesystem::path(*(argv + 1));
+
+	ASSERT(FileSystem::Exists(filepath), "Input file does not exist.");
+
+	SYSTEM_DEBUG("Input file: {}", filepath.filename());
+
+	std::string fileContents = FileSystem::ReadFile(filepath);
 
 	SW::LogSystem::Shutdown();
 

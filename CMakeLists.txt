@@ -7,6 +7,12 @@ set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_C_FLAGS -fcolor-diagnostics)
 set(CMAKE_CXX_FLAGS -fansi-escape-codes)
 
+if(WIN32)
+    add_compile_definitions(SW_PLATFORM_WINDOWS)
+elseif(UNIX)
+    add_compile_definitions(SW_PLATFORM_LINUX)
+endif()
+
 project(Wandelt VERSION 0.0.1 LANGUAGES CXX)
 
 add_subdirectory(WandeltCore WandeltCore)
