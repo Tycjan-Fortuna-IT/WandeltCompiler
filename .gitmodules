@@ -1,0 +1,3 @@
+[submodule "WandeltCore/modules/Logger"]
+	path = WandeltCore/modules/Logger
+	url = https://github.com/SW-II/Logger.git
