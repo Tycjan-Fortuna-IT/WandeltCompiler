@@ -1,1 +1,7 @@
-int $number = 12;
+let $number = 12;
+
+let $anotherNumber = 400;
+
+let $sum = $number + $anotherNumber;
+
+return $sum;
