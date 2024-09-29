@@ -24,7 +24,15 @@ namespace WandeltCore
 		const std::vector<Expression*>& GetExpressions() const { return m_Expressions; }
 
 	private:
-		bool IsOperator(TokenType type) const { return type == TokenType::PLUS; }
+		// Synchronize the parser after an error has occurred to prevent cascading errors.
+		void SynchronizeAfterError();
+
+		// Whether the token is an operator, meaning it can be used in an expression
+		// to perform an operation like addition.
+		bool IsExpressionOperator(TokenType type) const { return type == TokenType::PLUS; }
+
+		// Check if we are at the end of the source file
+		bool IsAtEnd() const { return m_Tokens.at(m_Current).Type == TokenType::END_OF_FILE; }
 
 		const Token& GetPreviousToken() const { return m_Tokens.at(m_Current - 1); }
 		const Token& GetCurrentToken() const { return m_Tokens.at(m_Current); }

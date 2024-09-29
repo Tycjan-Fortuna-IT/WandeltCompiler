@@ -13,16 +13,43 @@ namespace WandeltCore
 
 	void Parser::Parse()
 	{
-		// return
-
-		while (m_Tokens.at(m_Current).Type != TokenType::END_OF_FILE)
+		while (!IsAtEnd())
 		{
 			if (m_Tokens.at(m_Current).Type == TokenType::RETURN_KEYWORD)
 			{
-				m_Expressions.push_back(ParseReturnStatement());
+				Expression* expr = ParseReturnStatement();
+
+				if (!expr)
+				{
+					SynchronizeAfterError();
+					continue;
+				}
+
+				m_Expressions.push_back(expr);
 			}
 
 			SYSTEM_DEBUG("LOOP");
+		}
+	}
+
+	void Parser::SynchronizeAfterError()
+	{
+		EatCurrentToken();
+
+		while (!IsAtEnd())
+		{
+			if (GetPreviousToken().Type == TokenType::SEMICOLON)
+				return;
+
+			const Token& token = GetNextToken();
+
+			switch (token.Type)
+			{
+			case TokenType::RETURN_KEYWORD:
+				return;
+			default:
+				EatCurrentToken();
+			}
 		}
 	}
 
@@ -65,7 +92,7 @@ namespace WandeltCore
 		{
 			const Token& token = GetCurrentToken();
 
-			if (!IsOperator(token.Type))
+			if (!IsExpressionOperator(token.Type))
 				return lhs;
 
 			EatCurrentToken();
