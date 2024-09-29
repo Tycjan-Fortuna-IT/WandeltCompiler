@@ -65,6 +65,22 @@ namespace WandeltCore
 		}
 	}
 
+	i32 Parser::GetTokenPrecedence(TokenType type) const
+	{
+		switch (type)
+		{
+		case TokenType::STAR:
+		case TokenType::SLASH:
+			return 2;
+
+		case TokenType::PLUS:
+		case TokenType::MINUS:
+			return 1;
+		default:
+			return -1;
+		}
+	}
+
 	Expression* Parser::ParseLiteral()
 	{
 		const Token& token = GetCurrentToken();
@@ -76,7 +92,8 @@ namespace WandeltCore
 			return new NumberLiteral(std::stoi(token.Lexeme.value()));
 		}
 
-		SYSTEM_ERROR("Expected expression at line: {} column: {}.", token.Line, token.Column);
+		SYSTEM_ERROR("Expected expression at line: {} column: {}. Received: {}.", token.Line, token.Column,
+		             TokenTypeToString(token.Type));
 
 		return nullptr;
 	}
@@ -95,14 +112,15 @@ namespace WandeltCore
 		if (!lhs)
 			return nullptr;
 
-		return ParseExpressionRHS(lhs);
+		return ParseExpressionRHS(lhs, 0);
 	}
 
-	Expression* Parser::ParseExpressionRHS(Expression*& lhs)
+	Expression* Parser::ParseExpressionRHS(Expression*& lhs, i32 precedence)
 	{
 		while (true)
 		{
-			const Token& token = GetCurrentToken();
+			const Token& token  = GetCurrentToken(); // should be an operator
+			i32 tokenPrecedence = GetTokenPrecedence(token.Type);
 
 			if (!IsExpressionOperator(token.Type))
 				return lhs;
@@ -110,6 +128,14 @@ namespace WandeltCore
 			EatCurrentToken();
 
 			Expression* rhs = ParseLiteral();
+
+			if (tokenPrecedence < GetTokenPrecedence(GetCurrentToken().Type))
+			{
+				rhs = ParseExpressionRHS(rhs, tokenPrecedence + 1);
+
+				if (!rhs)
+					return nullptr;
+			}
 
 			if (!rhs)
 				return nullptr;

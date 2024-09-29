@@ -16,6 +16,12 @@ namespace WandeltCore
 			return "EQUALS";
 		case TokenType::PLUS:
 			return "PLUS";
+		case TokenType::MINUS:
+			return "MINUS";
+		case TokenType::STAR:
+			return "STAR";
+		case TokenType::SLASH:
+			return "SLASH";
 		case TokenType::SEMICOLON:
 			return "SEMICOLON";
 		case TokenType::IDENTIFIER:
@@ -40,6 +46,12 @@ namespace WandeltCore
 			return "=";
 		case TokenType::PLUS:
 			return "+";
+		case TokenType::MINUS:
+			return "-";
+		case TokenType::STAR:
+			return "*";
+		case TokenType::SLASH:
+			return "/";
 		case TokenType::SEMICOLON:
 			return ";";
 		case TokenType::END_OF_FILE:

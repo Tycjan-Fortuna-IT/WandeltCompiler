@@ -71,6 +71,12 @@ namespace WandeltCore
 
 		if (op == TokenType::PLUS)
 			return m_Builder.CreateAdd(lhs, rhs);
+		else if (op == TokenType::MINUS)
+			return m_Builder.CreateSub(lhs, rhs);
+		else if (op == TokenType::STAR)
+			return m_Builder.CreateMul(lhs, rhs);
+		else if (op == TokenType::SLASH)
+			return m_Builder.CreateSDiv(lhs, rhs);
 
 		llvm_unreachable("unexpected binary operator");
 

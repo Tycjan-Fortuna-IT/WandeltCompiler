@@ -64,6 +64,15 @@ namespace WandeltCore
 		case '+':
 			AddToken(TokenType::PLUS);
 			break;
+		case '-':
+			AddToken(TokenType::MINUS);
+			break;
+		case '*':
+			AddToken(TokenType::STAR);
+			break;
+		case '/':
+			AddToken(TokenType::SLASH);
+			break;
 		default:
 			if (IsDigit(c))
 			{

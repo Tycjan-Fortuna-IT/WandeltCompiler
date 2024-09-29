@@ -22,6 +22,9 @@ namespace WandeltCore
 		// Operators
 		EQUALS,
 		PLUS,
+		MINUS,
+		STAR,
+		SLASH,
 
 		// Punctuation
 		SEMICOLON,
