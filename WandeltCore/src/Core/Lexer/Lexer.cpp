@@ -18,6 +18,19 @@ namespace WandeltCore
 		AddToken(TokenType::END_OF_FILE);
 	}
 
+	bool Lexer::IsMatchingNext(char expected)
+	{
+		if (IsAtEnd())
+			return false;
+
+		if (m_Source[m_Current] != expected)
+			return false;
+
+		m_Current++;
+
+		return true;
+	}
+
 	char Lexer::Advance()
 	{
 		return m_Source[m_Current++];
@@ -47,6 +60,9 @@ namespace WandeltCore
 			break;
 		case '=':
 			AddToken(TokenType::EQUALS);
+			break;
+		case '+':
+			AddToken(TokenType::PLUS);
 			break;
 		default:
 			if (IsDigit(c))

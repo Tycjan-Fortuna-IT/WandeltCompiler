@@ -31,6 +31,9 @@ namespace WandeltCore
 		// Check if a character is a letter or not (a-z, A-Z, $). Includes $ for identifiers.
 		bool IsAlpha(char c) const { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '$'; }
 
+		// Check if next character matches the expected character. Consume the character if it matches.
+		bool IsMatchingNext(char expected);
+
 		// Advance and consume the current character.
 		char Advance();
 

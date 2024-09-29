@@ -1,7 +1,1 @@
-let $number = 12;
-
-let $anotherNumber = 400;
-
-let $sum = $number + $anotherNumber;
-
-return $sum;
+return 32 + 22 + 90;

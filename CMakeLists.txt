@@ -6,6 +6,7 @@ set(CMAKE_CXX_COMPILER "clang++")
 
 set(CMAKE_C_FLAGS -fcolor-diagnostics)
 set(CMAKE_CXX_FLAGS -fansi-escape-codes)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
 
 if(WIN32)
     add_compile_definitions(SW_PLATFORM_WINDOWS)

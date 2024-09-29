@@ -21,6 +21,7 @@ namespace WandeltCore
 
 		// Operators
 		EQUALS,
+		PLUS,
 
 		// Punctuation
 		SEMICOLON,

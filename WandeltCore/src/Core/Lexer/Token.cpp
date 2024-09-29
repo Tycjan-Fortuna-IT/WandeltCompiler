@@ -14,6 +14,8 @@ namespace WandeltCore
 			return "RETURN_KEYWORD";
 		case TokenType::EQUALS:
 			return "EQUALS";
+		case TokenType::PLUS:
+			return "PLUS";
 		case TokenType::SEMICOLON:
 			return "SEMICOLON";
 		case TokenType::IDENTIFIER:
@@ -36,6 +38,8 @@ namespace WandeltCore
 			return "return";
 		case TokenType::EQUALS:
 			return "=";
+		case TokenType::PLUS:
+			return "+";
 		case TokenType::SEMICOLON:
 			return ";";
 		case TokenType::END_OF_FILE:
