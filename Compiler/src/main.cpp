@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 
 	ASSERT(FileSystem::Exists(filepath), "Input file does not exist.");
 
-	SYSTEM_DEBUG("Input file: {}", filepath.filename());
+	SYSTEM_INFO("Input file: {}", filepath.filename());
 
 	std::string fileContents = FileSystem::ReadFile(filepath);
 
@@ -77,6 +77,12 @@ int main(int argc, char* argv[])
 		}
 
 		SYSTEM_DEBUG("Expression: {}", expression->ToString());
+	}
+
+	if (!parser.IsValid())
+	{
+		SYSTEM_ERROR("Syntax errors occurred. Exiting.");
+		return 0;
 	}
 
 	Codegen codegen;

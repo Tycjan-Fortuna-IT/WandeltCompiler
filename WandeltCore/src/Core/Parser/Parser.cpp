@@ -1,5 +1,7 @@
 #include "Parser.hpp"
 
+#include <iostream>
+
 namespace WandeltCore
 {
 	Parser::Parser(const std::vector<Token>& tokens) : m_Tokens(tokens)
@@ -18,7 +20,6 @@ namespace WandeltCore
 			if (m_Tokens.at(m_Current).Type == TokenType::RETURN_KEYWORD)
 			{
 				Expression* expr = ParseReturnStatement();
-
 				if (!expr)
 				{
 					SynchronizeAfterError();
@@ -26,22 +27,32 @@ namespace WandeltCore
 				}
 
 				m_Expressions.push_back(expr);
+
+				continue;
 			}
 
-			SYSTEM_DEBUG("LOOP");
+			const Token& token = GetAndEatCurrentToken();
+			if (token.Type == TokenType::END_OF_FILE)
+				break;
+
+			SYSTEM_ERROR("Token not handled: {} at line: {} column: {}.", TokenTypeToString(token.Type), token.Line,
+			             token.Column);
+
+			m_IsValid = false;
 		}
 	}
 
 	void Parser::SynchronizeAfterError()
 	{
-		EatCurrentToken();
+		SYSTEM_ERROR("Synchronizing parser after error.");
+		m_IsValid = false;
 
 		while (!IsAtEnd())
 		{
-			if (GetPreviousToken().Type == TokenType::SEMICOLON)
+			if (GetNextToken().Type == TokenType::SEMICOLON)
 				return;
 
-			const Token& token = GetNextToken();
+			const Token& token = GetCurrentToken();
 
 			switch (token.Type)
 			{
@@ -49,6 +60,7 @@ namespace WandeltCore
 				return;
 			default:
 				EatCurrentToken();
+				break;
 			}
 		}
 	}
@@ -64,7 +76,7 @@ namespace WandeltCore
 			return new NumberLiteral(std::stoi(token.Lexeme.value()));
 		}
 
-		SYSTEM_ERROR("Expected expression at line: {} column: {}", token.Line, token.Column);
+		SYSTEM_ERROR("Expected expression at line: {} column: {}.", token.Line, token.Column);
 
 		return nullptr;
 	}
@@ -110,15 +122,18 @@ namespace WandeltCore
 
 	Expression* Parser::ParseReturnStatement()
 	{
-		EatCurrentToken(); // Eat return keyword
+		EatCurrentToken(); // eat the return keyword
+		const Token& token = GetCurrentToken();
 
-		if (GetCurrentToken().Type != TokenType::SEMICOLON)
+		if (token.Type != TokenType::SEMICOLON)
 		{
-			Expression* expr = ParseExpression();
+			Expression* expr        = ParseExpression();
+			const Token& afterToken = GetCurrentToken(); // should be a semicolon
 
-			if (GetCurrentToken().Type != TokenType::SEMICOLON)
+			if (afterToken.Type != TokenType::SEMICOLON)
 			{
-				SYSTEM_ERROR("Expected ';' after the return statement.");
+				SYSTEM_ERROR("Expected ';' after the return keyword. At line: {} column: {}.", afterToken.Line,
+				             afterToken.Column);
 
 				return nullptr;
 			}
@@ -128,7 +143,7 @@ namespace WandeltCore
 			return new ReturnStatement(expr);
 		}
 
-		SYSTEM_ERROR("Expected ';' after the return statement.");
+		SYSTEM_ERROR("Expected ';' after the return keyword. At line: {} column: {}.", token.Line, token.Column);
 
 		return nullptr;
 	}

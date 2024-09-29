@@ -23,6 +23,8 @@ namespace WandeltCore
 
 		const std::vector<Expression*>& GetExpressions() const { return m_Expressions; }
 
+		bool IsValid() const { return m_IsValid; }
+
 	private:
 		// Synchronize the parser after an error has occurred to prevent cascading errors.
 		void SynchronizeAfterError();
@@ -51,6 +53,8 @@ namespace WandeltCore
 
 	private:
 		i32 m_Current = 0;
+
+		bool m_IsValid = true; // Whether the parser is in a valid state. Meaning no errors have occurred.
 
 		std::vector<Token> m_Tokens;
 		std::vector<Expression*> m_Expressions;

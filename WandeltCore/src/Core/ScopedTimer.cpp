@@ -18,6 +18,6 @@ namespace WandeltCore
 
 		double ms = ns * 0.001;
 
-		SYSTEM_DEBUG(m_Fmt, ms, ns);
+		SYSTEM_INFO(m_Fmt, ms, ns);
 	}
 } // namespace WandeltCore
