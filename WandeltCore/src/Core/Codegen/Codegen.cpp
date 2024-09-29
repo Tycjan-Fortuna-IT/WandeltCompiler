@@ -57,6 +57,9 @@ namespace WandeltCore
 		if (BinaryExpression* binaryExpression = dynamic_cast<BinaryExpression*>(expression))
 			return GenerateBinaryExpression(binaryExpression);
 
+		if (GroupingExpression* groupingExpression = dynamic_cast<GroupingExpression*>(expression))
+			return GenerateExpression(groupingExpression->GetExpression());
+
 		llvm_unreachable("unexpected expression");
 
 		return nullptr;

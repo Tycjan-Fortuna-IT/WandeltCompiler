@@ -40,7 +40,6 @@ namespace WandeltCore
 		    : m_Left(left), m_Right(right), m_Operator(op)
 		{
 		}
-
 		~BinaryExpression()
 		{
 			delete m_Left;
@@ -65,11 +64,24 @@ namespace WandeltCore
 		TokenType m_Operator;
 	};
 
+	class GroupingExpression : public Expression
+	{
+	public:
+		GroupingExpression(Expression* expression) : m_Expression(expression) {}
+		~GroupingExpression() { delete m_Expression; }
+
+		std::string ToString() const override { return "GroupingExpression: " + m_Expression->ToString(); }
+
+		Expression* GetExpression() const { return m_Expression; }
+
+	private:
+		Expression* m_Expression;
+	};
+
 	class ReturnStatement : public Expression
 	{
 	public:
 		ReturnStatement(Expression* expression) : m_Expression(expression) {}
-
 		~ReturnStatement() { delete m_Expression; }
 
 		std::string ToString() const override

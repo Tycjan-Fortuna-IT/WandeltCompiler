@@ -16,18 +16,24 @@ namespace WandeltCore
 		NUMBER,
 
 		// Keywords
-		LET_KEYWORD,
-		RETURN_KEYWORD,
+		LET_KEYWORD,    // let
+		RETURN_KEYWORD, // return
+
+		// Braces
+		LEFT_PARENTHESES,  // (
+		RIGHT_PARENTHESES, // )
+		LEFT_BRACE,        // {
+		RIGHT_BRACE,       // }
 
 		// Operators
-		EQUALS,
-		PLUS,
-		MINUS,
-		STAR,
-		SLASH,
+		EQUALS, // =
+		PLUS,   // +
+		MINUS,  // -
+		STAR,   // *
+		SLASH,  // /
 
 		// Punctuation
-		SEMICOLON,
+		SEMICOLON, // ;
 
 		// Other
 		IDENTIFIER,

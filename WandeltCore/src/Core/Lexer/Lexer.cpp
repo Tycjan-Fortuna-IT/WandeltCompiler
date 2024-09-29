@@ -1,5 +1,8 @@
 #include "Lexer.hpp"
 
+#define TOKEN_CASE(x) \
+	AddToken(x);      \
+	break;
 namespace WandeltCore
 {
 	Lexer::Lexer(const std::string& source) : m_Source(source)
@@ -56,23 +59,25 @@ namespace WandeltCore
 			++m_Line;
 			break;
 		case ';':
-			AddToken(TokenType::SEMICOLON);
-			break;
+			TOKEN_CASE(TokenType::SEMICOLON);
 		case '=':
-			AddToken(TokenType::EQUALS);
-			break;
+			TOKEN_CASE(TokenType::EQUALS);
+		case '(':
+			TOKEN_CASE(TokenType::LEFT_PARENTHESES);
+		case ')':
+			TOKEN_CASE(TokenType::RIGHT_PARENTHESES);
+		case '{':
+			TOKEN_CASE(TokenType::LEFT_BRACE);
+		case '}':
+			TOKEN_CASE(TokenType::RIGHT_BRACE);
 		case '+':
-			AddToken(TokenType::PLUS);
-			break;
+			TOKEN_CASE(TokenType::PLUS);
 		case '-':
-			AddToken(TokenType::MINUS);
-			break;
+			TOKEN_CASE(TokenType::MINUS);
 		case '*':
-			AddToken(TokenType::STAR);
-			break;
+			TOKEN_CASE(TokenType::STAR);
 		case '/':
-			AddToken(TokenType::SLASH);
-			break;
+			TOKEN_CASE(TokenType::SLASH);
 		default:
 			if (IsDigit(c))
 			{
@@ -109,7 +114,7 @@ namespace WandeltCore
 				break;
 			}
 
-			SYSTEM_ERROR("Unexpected character: {}", c);
+			SYSTEM_ERROR("Unexpected character: {} at line: {} column: {}. Skipping.", c, m_Line, m_Current - m_Start);
 			break;
 		}
 	}

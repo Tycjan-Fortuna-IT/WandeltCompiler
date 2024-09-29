@@ -12,6 +12,14 @@ namespace WandeltCore
 			return "LET_KEYWORD";
 		case TokenType::RETURN_KEYWORD:
 			return "RETURN_KEYWORD";
+		case TokenType::LEFT_PARENTHESES:
+			return "LEFT_PARENTHESES";
+		case TokenType::RIGHT_PARENTHESES:
+			return "RIGHT_PARENTHESES";
+		case TokenType::LEFT_BRACE:
+			return "LEFT_BRACE";
+		case TokenType::RIGHT_BRACE:
+			return "RIGHT_BRACE";
 		case TokenType::EQUALS:
 			return "EQUALS";
 		case TokenType::PLUS:
@@ -42,6 +50,14 @@ namespace WandeltCore
 			return "let";
 		case TokenType::RETURN_KEYWORD:
 			return "return";
+		case TokenType::LEFT_PARENTHESES:
+			return "(";
+		case TokenType::RIGHT_PARENTHESES:
+			return ")";
+		case TokenType::LEFT_BRACE:
+			return "{";
+		case TokenType::RIGHT_BRACE:
+			return "}";
 		case TokenType::EQUALS:
 			return "=";
 		case TokenType::PLUS:

@@ -44,7 +44,7 @@ namespace WandeltCore
 
 	void Parser::SynchronizeAfterError()
 	{
-		SYSTEM_ERROR("Synchronizing parser after error.");
+		// SYSTEM_ERROR("Synchronizing parser after error.");
 		m_IsValid = false;
 
 		while (!IsAtEnd())
@@ -84,6 +84,24 @@ namespace WandeltCore
 	Expression* Parser::ParseLiteral()
 	{
 		const Token& token = GetCurrentToken();
+
+		if (token.Type == TokenType::LEFT_PARENTHESES)
+		{
+			EatCurrentToken(); // eat the left parentheses
+
+			Expression* expr = ParseExpression();
+
+			if (GetCurrentToken().Type != TokenType::RIGHT_PARENTHESES)
+			{
+				SYSTEM_ERROR("Expected ')' at line: {} column: {}.", token.Line, token.Column);
+
+				return nullptr;
+			}
+
+			EatCurrentToken(); // eat the right parentheses
+
+			return new GroupingExpression(expr);
+		}
 
 		if (token.Type == TokenType::NUMBER)
 		{
@@ -129,6 +147,9 @@ namespace WandeltCore
 
 			Expression* rhs = ParseLiteral();
 
+			if (!rhs)
+				return nullptr;
+
 			if (tokenPrecedence < GetTokenPrecedence(GetCurrentToken().Type))
 			{
 				rhs = ParseExpressionRHS(rhs, tokenPrecedence + 1);
@@ -136,9 +157,6 @@ namespace WandeltCore
 				if (!rhs)
 					return nullptr;
 			}
-
-			if (!rhs)
-				return nullptr;
 
 			lhs = new BinaryExpression(lhs, rhs, token.Type);
 		}
@@ -153,7 +171,12 @@ namespace WandeltCore
 
 		if (token.Type != TokenType::SEMICOLON)
 		{
-			Expression* expr        = ParseExpression();
+			Expression* expr = ParseExpression();
+			if (!expr)
+			{
+				return nullptr;
+			}
+
 			const Token& afterToken = GetCurrentToken(); // should be a semicolon
 
 			if (afterToken.Type != TokenType::SEMICOLON)
