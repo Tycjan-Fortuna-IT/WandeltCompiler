@@ -27,6 +27,8 @@ namespace WandeltCore
 
 		std::string ToString() const override { return "NumberLiteral: " + std::to_string(m_Value); }
 
+		i32 GetValue() const { return m_Value; }
+
 	private:
 		i32 m_Value;
 	};
@@ -51,6 +53,11 @@ namespace WandeltCore
 			       m_Right->ToString();
 		}
 
+		Expression* GetLeft() const { return m_Left; }
+		Expression* GetRight() const { return m_Right; }
+
+		TokenType GetOperator() const { return m_Operator; }
+
 	private:
 		Expression* m_Left;
 		Expression* m_Right;
@@ -74,6 +81,8 @@ namespace WandeltCore
 
 			return "ReturnStatement: " + m_Expression->ToString();
 		}
+
+		Expression* GetExpression() const { return m_Expression; }
 
 	private:
 		Expression* m_Expression;

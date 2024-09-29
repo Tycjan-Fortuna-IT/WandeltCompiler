@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
 	Codegen codegen;
 	{
 		ScopedTimer timer("Generating IR took: {} ms, {} ns");
-		codegen.GenerateIR();
+		codegen.GenerateIR(expressions);
 	}
 
 	SYSTEM_DEBUG("Generated IR: ");

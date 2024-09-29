@@ -12,6 +12,8 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 
+#include "Core/AST/AST.hpp"
+
 namespace WandeltCore
 {
 	class Codegen
@@ -19,12 +21,17 @@ namespace WandeltCore
 	public:
 		Codegen();
 
-		void GenerateIR();
+		void GenerateIR(const std::vector<Expression*>& expressions);
 
 		const llvm::Module& GetModuleWithGeneratedIR() const { return m_Module; }
 
 	private:
 		void GenerateEntrypoint();
+
+		llvm::Value* GenerateExpression(Expression* expression);
+		llvm::Value* GenerateBinaryExpression(BinaryExpression* binaryExpression);
+
+		void GenerateReturnStatement(ReturnStatement* returnStatement);
 
 	private:
 		llvm::LLVMContext m_Context;
