@@ -60,6 +60,9 @@ namespace WandeltCore
 		if (GroupingExpression* groupingExpression = dynamic_cast<GroupingExpression*>(expression))
 			return GenerateExpression(groupingExpression->GetExpression());
 
+		if (PowerExpression* powerExpression = dynamic_cast<PowerExpression*>(expression))
+			return GeneratePowerExpression(powerExpression);
+
 		llvm_unreachable("unexpected expression");
 
 		return nullptr;
@@ -80,10 +83,66 @@ namespace WandeltCore
 			return m_Builder.CreateMul(lhs, rhs);
 		else if (op == TokenType::SLASH)
 			return m_Builder.CreateSDiv(lhs, rhs);
+		else if (op == TokenType::PERCENT)
+			return m_Builder.CreateSRem(lhs, rhs);
 
 		llvm_unreachable("unexpected binary operator");
 
 		return nullptr;
+	}
+
+	llvm::Value* Codegen::GeneratePowerExpression(PowerExpression* powerExpression)
+	{
+		llvm::Value* base     = GenerateExpression(powerExpression->GetBase());
+		llvm::Value* exponent = GenerateExpression(powerExpression->GetExponent());
+
+		llvm::Function* function = m_Builder.GetInsertBlock()->getParent();
+
+		llvm::BasicBlock* entryBlock     = m_Builder.GetInsertBlock();
+		llvm::BasicBlock* loopBlock      = llvm::BasicBlock::Create(m_Context, "loop", function);
+		llvm::BasicBlock* afterLoopBlock = llvm::BasicBlock::Create(m_Context, "afterloop", function);
+
+		// Initialize the result to 1
+		llvm::Value* result = llvm::ConstantInt::get(base->getType(), 1);
+
+		// Initialize the loop counter to 0
+		llvm::Value* counter = llvm::ConstantInt::get(exponent->getType(), 0);
+
+		// Jump to the loop block
+		m_Builder.CreateBr(loopBlock);
+
+		// Set the insert point to the loop block
+		m_Builder.SetInsertPoint(loopBlock);
+
+		// PHI node for the result
+		llvm::PHINode* resultPhi = m_Builder.CreatePHI(base->getType(), 2, "result");
+		resultPhi->addIncoming(result, entryBlock);
+
+		// PHI node for the counter
+		llvm::PHINode* counterPhi = m_Builder.CreatePHI(exponent->getType(), 2, "counter");
+		counterPhi->addIncoming(counter, entryBlock);
+
+		// Multiply the result by the base
+		llvm::Value* newResult = m_Builder.CreateMul(resultPhi, base);
+
+		// Increment the counter
+		llvm::Value* newCounter = m_Builder.CreateAdd(counterPhi, llvm::ConstantInt::get(exponent->getType(), 1));
+
+		// Check if the counter is less than or equal to the exponent
+		llvm::Value* condition = m_Builder.CreateICmpULE(newCounter, exponent);
+
+		// Add the new values to the PHI nodes
+		resultPhi->addIncoming(newResult, loopBlock);
+		counterPhi->addIncoming(newCounter, loopBlock);
+
+		// Create the conditional branch
+		m_Builder.CreateCondBr(condition, loopBlock, afterLoopBlock);
+
+		// Set the insert point to the after loop block
+		m_Builder.SetInsertPoint(afterLoopBlock);
+
+		// Return the final result
+		return resultPhi;
 	}
 
 	void Codegen::GenerateReturnStatement(ReturnStatement* returnStatement)

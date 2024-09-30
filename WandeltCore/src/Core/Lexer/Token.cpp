@@ -28,8 +28,12 @@ namespace WandeltCore
 			return "MINUS";
 		case TokenType::STAR:
 			return "STAR";
+		case TokenType::DOUBLE_STAR:
+			return "DOUBLE_STAR";
 		case TokenType::SLASH:
 			return "SLASH";
+		case TokenType::PERCENT:
+			return "PERCENT";
 		case TokenType::SEMICOLON:
 			return "SEMICOLON";
 		case TokenType::IDENTIFIER:
@@ -66,8 +70,12 @@ namespace WandeltCore
 			return "-";
 		case TokenType::STAR:
 			return "*";
+		case TokenType::DOUBLE_STAR:
+			return "**";
 		case TokenType::SLASH:
 			return "/";
+		case TokenType::PERCENT:
+			return "%";
 		case TokenType::SEMICOLON:
 			return ";";
 		case TokenType::END_OF_FILE:

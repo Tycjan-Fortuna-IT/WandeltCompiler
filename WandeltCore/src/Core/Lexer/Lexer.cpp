@@ -74,10 +74,26 @@ namespace WandeltCore
 			TOKEN_CASE(TokenType::PLUS);
 		case '-':
 			TOKEN_CASE(TokenType::MINUS);
-		case '*':
+		case '*': {
+			if (IsMatchingNext('*'))
+			{
+				TOKEN_CASE(TokenType::DOUBLE_STAR);
+			}
+			else
+			{
+				TOKEN_CASE(TokenType::STAR);
+			}
+		}
 			TOKEN_CASE(TokenType::STAR);
-		case '/':
-			TOKEN_CASE(TokenType::SLASH);
+		case '/': {
+			if (IsMatchingNext('/'))
+				// A comment goes until the end of the line.
+				while (LookAhead() != '\n' && !IsAtEnd()) Advance();
+			else
+				TOKEN_CASE(TokenType::SLASH);
+		}
+		case '%':
+			TOKEN_CASE(TokenType::PERCENT);
 		default:
 			if (IsDigit(c))
 			{

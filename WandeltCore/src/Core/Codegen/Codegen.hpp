@@ -30,6 +30,7 @@ namespace WandeltCore
 
 		llvm::Value* GenerateExpression(Expression* expression);
 		llvm::Value* GenerateBinaryExpression(BinaryExpression* binaryExpression);
+		llvm::Value* GeneratePowerExpression(PowerExpression* powerExpression);
 
 		void GenerateReturnStatement(ReturnStatement* returnStatement);
 

@@ -69,6 +69,9 @@ namespace WandeltCore
 	{
 		switch (type)
 		{
+		case TokenType::DOUBLE_STAR:
+		case TokenType::PERCENT:
+			return 3;
 		case TokenType::STAR:
 		case TokenType::SLASH:
 			return 2;
@@ -158,7 +161,10 @@ namespace WandeltCore
 					return nullptr;
 			}
 
-			lhs = new BinaryExpression(lhs, rhs, token.Type);
+			if (token.Type == TokenType::DOUBLE_STAR)
+				lhs = new PowerExpression(lhs, rhs);
+			else
+				lhs = new BinaryExpression(lhs, rhs, token.Type);
 		}
 
 		return lhs;

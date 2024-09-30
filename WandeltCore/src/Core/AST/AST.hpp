@@ -58,10 +58,33 @@ namespace WandeltCore
 		TokenType GetOperator() const { return m_Operator; }
 
 	private:
-		Expression* m_Left;
-		Expression* m_Right;
+		Expression* m_Left  = nullptr;
+		Expression* m_Right = nullptr;
 
 		TokenType m_Operator;
+	};
+
+	class PowerExpression : public Expression
+	{
+	public:
+		PowerExpression(Expression* base, Expression* exponent) : m_Base(base), m_Exponent(exponent) {}
+		~PowerExpression()
+		{
+			delete m_Base;
+			delete m_Exponent;
+		}
+
+		std::string ToString() const override
+		{
+			return "PowerExpression: " + m_Base->ToString() + " ** " + m_Exponent->ToString();
+		}
+
+		Expression* GetBase() const { return m_Base; }
+		Expression* GetExponent() const { return m_Exponent; }
+
+	private:
+		Expression* m_Base     = nullptr;
+		Expression* m_Exponent = nullptr;
 	};
 
 	class GroupingExpression : public Expression
@@ -75,7 +98,7 @@ namespace WandeltCore
 		Expression* GetExpression() const { return m_Expression; }
 
 	private:
-		Expression* m_Expression;
+		Expression* m_Expression = nullptr;
 	};
 
 	class ReturnStatement : public Expression
@@ -97,6 +120,6 @@ namespace WandeltCore
 		Expression* GetExpression() const { return m_Expression; }
 
 	private:
-		Expression* m_Expression;
+		Expression* m_Expression = nullptr;
 	};
 } // namespace WandeltCore

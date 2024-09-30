@@ -26,11 +26,13 @@ namespace WandeltCore
 		RIGHT_BRACE,       // }
 
 		// Operators
-		EQUALS, // =
-		PLUS,   // +
-		MINUS,  // -
-		STAR,   // *
-		SLASH,  // /
+		EQUALS,      // =
+		PLUS,        // +
+		MINUS,       // -
+		STAR,        // *
+		DOUBLE_STAR, // **
+		SLASH,       // /
+		PERCENT,     // %
 
 		// Punctuation
 		SEMICOLON, // ;
