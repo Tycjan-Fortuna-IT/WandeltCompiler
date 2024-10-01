@@ -121,7 +121,19 @@ namespace WandeltCore
 
 	Expression* Parser::ParsePrefixExpression()
 	{
-		// for future handling of unary operators
+		const Token& token = GetCurrentToken();
+
+		if (token.Type == TokenType::MINUS)
+		{
+			EatCurrentToken();
+
+			Expression* expr = ParseLiteral();
+
+			if (!expr)
+				return nullptr;
+
+			return new UnaryExpression(expr, token.Type);
+		}
 
 		return ParseLiteral();
 	}

@@ -63,6 +63,9 @@ namespace WandeltCore
 		if (PowerExpression* powerExpression = dynamic_cast<PowerExpression*>(expression))
 			return GeneratePowerExpression(powerExpression);
 
+		if (UnaryExpression* unaryExpression = dynamic_cast<UnaryExpression*>(expression))
+			return GenerateUnaryExpression(unaryExpression);
+
 		llvm_unreachable("unexpected expression");
 
 		return nullptr;
@@ -143,6 +146,19 @@ namespace WandeltCore
 
 		// Return the final result
 		return resultPhi;
+	}
+
+	llvm::Value* Codegen::GenerateUnaryExpression(UnaryExpression* unaryExpression)
+	{
+		llvm::Value* operand = GenerateExpression(unaryExpression->GetOperand());
+		const TokenType& op  = unaryExpression->GetOperator();
+
+		if (op == TokenType::MINUS)
+			return m_Builder.CreateNeg(operand);
+
+		llvm_unreachable("unexpected unary operator");
+
+		return nullptr;
 	}
 
 	void Codegen::GenerateReturnStatement(ReturnStatement* returnStatement)

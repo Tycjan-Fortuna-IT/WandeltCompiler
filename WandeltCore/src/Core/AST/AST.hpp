@@ -64,6 +64,26 @@ namespace WandeltCore
 		TokenType m_Operator;
 	};
 
+	class UnaryExpression : public Expression
+	{
+	public:
+		UnaryExpression(Expression* operand, TokenType op) : m_Operand(operand), m_Operator(op) {}
+		~UnaryExpression() { delete m_Operand; }
+
+		std::string ToString() const override
+		{
+			return "UnaryExpression: " + std::string(TokenTypeToString(m_Operator)) + " " + m_Operand->ToString();
+		}
+
+		Expression* GetOperand() const { return m_Operand; }
+
+		TokenType GetOperator() const { return m_Operator; }
+
+	private:
+		Expression* m_Operand = nullptr;
+		TokenType m_Operator;
+	};
+
 	class PowerExpression : public Expression
 	{
 	public:
