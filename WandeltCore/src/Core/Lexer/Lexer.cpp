@@ -11,7 +11,7 @@ namespace WandeltCore
 
 	void Lexer::Lex()
 	{
-		while (!IsAtEnd())
+		while (!IsAtEnd() && m_IsValid)
 		{
 			m_Start = m_Current;
 
@@ -89,6 +89,31 @@ namespace WandeltCore
 			if (IsMatchingNext('/'))
 				// A comment goes until the end of the line.
 				while (LookAhead() != '\n' && !IsAtEnd()) Advance();
+			else if (IsMatchingNext('*'))
+			{
+				// A block comment goes until the end of the block.
+				while (!(LookAhead() == '*' && LookAhead(1) == '/') && !IsAtEnd())
+				{
+					if (LookAhead() == '\n')
+						++m_Line;
+
+					Advance();
+				}
+
+				if (IsAtEnd())
+				{
+					SYSTEM_ERROR("Unterminated block comment at line: {} column: {}", m_Line, m_Current - m_Start);
+					m_IsValid = false;
+					break;
+				}
+
+				// Consume the '*/'
+				if (!IsAtEnd())
+				{
+					Advance();
+					Advance();
+				}
+			}
 			else
 				TOKEN_CASE(TokenType::SLASH);
 		}
@@ -131,6 +156,9 @@ namespace WandeltCore
 			}
 
 			SYSTEM_ERROR("Unexpected character: {} at line: {} column: {}. Skipping.", c, m_Line, m_Current - m_Start);
+
+			m_IsValid = false;
+
 			break;
 		}
 	}

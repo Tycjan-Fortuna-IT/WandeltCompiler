@@ -46,6 +46,12 @@ int main(int argc, char* argv[])
 		lexer.Lex();
 	}
 
+	if (!lexer.IsValid())
+	{
+		SYSTEM_ERROR("Lexing failed. Syntax errors occurred. Exiting.");
+		return 0;
+	}
+
 	std::vector<Token> tokens = lexer.GetTokens();
 
 	SYSTEM_DEBUG("Tokens: ");
@@ -81,7 +87,7 @@ int main(int argc, char* argv[])
 
 	if (!parser.IsValid())
 	{
-		SYSTEM_ERROR("Syntax errors occurred. Exiting.");
+		SYSTEM_ERROR("Parsing failed. Syntax errors occurred. Exiting.");
 		return 0;
 	}
 

@@ -21,6 +21,8 @@ namespace WandeltCore
 
 		const std::vector<Token>& GetTokens() const { return m_Tokens; }
 
+		bool IsValid() const { return m_IsValid; }
+
 	private:
 		// Check if we are at the end of the source file
 		bool IsAtEnd() const { return m_Current >= m_Source.size() - 1; }
@@ -53,5 +55,7 @@ namespace WandeltCore
 		u32 m_Line    = 1; // The current line
 
 		std::vector<Token> m_Tokens; // The lexed tokens
+
+		bool m_IsValid = true; // Whether the lexer is in a valid state
 	};
 } // namespace WandeltCore
