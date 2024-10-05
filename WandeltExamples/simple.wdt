@@ -22,10 +22,10 @@
 //     return 20 / 2;
 // }
 
-return -2 + 5 ** 2;
-
 // if (1 > 0) {
 //     return 0;
 // } else {
 //     return 20 / 2;
 // }
+
+return (-2 + 5 ** 2) ** 2;

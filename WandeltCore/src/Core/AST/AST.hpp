@@ -26,6 +26,21 @@ namespace WandeltCore
 	//  DeclarationStatement
 	//   VariableDeclaration
 	//   FunctionDeclaration
+	class Statement
+	{
+	public:
+		Statement(const SourceLocation& location) : m_Location(location) {}
+		virtual ~Statement() = default;
+
+		const SourceLocation& GetLocation() const { return m_Location; }
+
+		virtual llvm::Value* GenerateExpression(Visitor* visitor) = 0;
+
+		virtual std::string ToString(u32 indentation = 0) const = 0;
+
+	private:
+		SourceLocation m_Location;
+	};
 
 	class Expression
 	{
@@ -34,7 +49,7 @@ namespace WandeltCore
 
 		virtual llvm::Value* GenerateExpression(Visitor* visitor) = 0;
 
-		virtual std::string ToString() const = 0;
+		virtual void Dump(u32 indentation = 0) const = 0;
 	};
 
 	class NumberLiteral : public Expression
@@ -44,7 +59,7 @@ namespace WandeltCore
 
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateNumberLiteral(this); }
 
-		std::string ToString() const override { return "NumberLiteral: " + std::to_string(m_Value); }
+		void Dump(u32 indentation = 0) const override;
 
 		i32 GetValue() const { return m_Value; }
 
@@ -67,11 +82,11 @@ namespace WandeltCore
 
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateBinaryExpression(this); }
 
-		std::string ToString() const override
-		{
-			return "BinaryExpression: " + m_Left->ToString() + " " + std::string(TokenTypeToString(m_Operator)) + " " +
-			       m_Right->ToString();
-		}
+		void Dump(u32 indentation = 0) const override;
+		// {
+		// 	return "BinaryExpression: " + m_Left->ToString() + " " + std::string(TokenTypeToString(m_Operator)) + " " +
+		// 	       m_Right->ToString();
+		// }
 
 		Expression* GetLeft() const { return m_Left; }
 		Expression* GetRight() const { return m_Right; }
@@ -93,10 +108,10 @@ namespace WandeltCore
 
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateUnaryExpression(this); }
 
-		std::string ToString() const override
-		{
-			return "UnaryExpression: " + std::string(TokenTypeToString(m_Operator)) + " " + m_Operand->ToString();
-		}
+		void Dump(u32 indentation = 0) const override;
+		// {
+		// 	return "UnaryExpression: " + std::string(TokenTypeToString(m_Operator)) + " " + m_Operand->ToString();
+		// }
 
 		Expression* GetOperand() const { return m_Operand; }
 
@@ -119,10 +134,10 @@ namespace WandeltCore
 
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GeneratePowerExpression(this); }
 
-		std::string ToString() const override
-		{
-			return "PowerExpression: " + m_Base->ToString() + " ** " + m_Exponent->ToString();
-		}
+		void Dump(u32 indentation = 0) const override;
+		// {
+		// 	return "PowerExpression: " + m_Base->ToString() + " ** " + m_Exponent->ToString();
+		// }
 
 		Expression* GetBase() const { return m_Base; }
 		Expression* GetExponent() const { return m_Exponent; }
@@ -140,7 +155,10 @@ namespace WandeltCore
 
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateGroupingExpression(this); }
 
-		std::string ToString() const override { return "GroupingExpression: " + m_Expression->ToString(); }
+		void Dump(u32 indentation = 0) const override;
+		// {
+		// 	return "GroupingExpression: " + m_Expression->ToString();
+		// }
 
 		Expression* GetExpression() const { return m_Expression; }
 
@@ -156,15 +174,7 @@ namespace WandeltCore
 
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateReturnStatement(this); }
 
-		std::string ToString() const override
-		{
-			if (m_Expression == nullptr)
-			{
-				return "ReturnStatement: empty";
-			}
-
-			return "ReturnStatement: " + m_Expression->ToString();
-		}
+		void Dump(u32 indentation = 0) const override;
 
 		Expression* GetExpression() const { return m_Expression; }
 

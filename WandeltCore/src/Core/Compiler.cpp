@@ -78,7 +78,7 @@ namespace WandeltCore
 					continue;
 				}
 
-				SYSTEM_DEBUG("Expression: {}", expression->ToString());
+				expression->Dump();
 			}
 		}
 
