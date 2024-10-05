@@ -45,6 +45,9 @@ namespace WandeltCore
 		// Check if a character is a letter or not (a-z, A-Z, $). Includes $ for identifiers.
 		bool IsAlpha(char c) const { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '$'; }
 
+		// Check if a character is a whitespace character
+		bool IsWhitespace(char c) const { return c == ' ' || c == '\t' || c == '\r'; }
+
 		// Check if next character matches the expected character. Consume the character if it matches.
 		bool IsMatchingNext(char expected);
 
@@ -56,8 +59,8 @@ namespace WandeltCore
 
 		void ScanToken();
 
-		void AddToken(TokenType type);
-		void AddToken(TokenType type, const std::string& lexeme);
+		void AddToken(const SourceLocation& location, TokenType type);
+		void AddToken(const SourceLocation& location, TokenType type, const std::string& lexeme);
 
 	private:
 		std::string m_Source;   // The source code
@@ -66,6 +69,7 @@ namespace WandeltCore
 		u32 m_Start   = 0; // The start of the current lexeme
 		u32 m_Current = 0; // The current character index
 		u32 m_Line    = 1; // The current line
+		u32 m_Column  = 0; // The current column
 
 		std::vector<Token> m_Tokens; // The lexed tokens
 

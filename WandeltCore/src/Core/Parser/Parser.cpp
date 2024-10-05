@@ -37,7 +37,7 @@ namespace WandeltCore
 
 			SYSTEM_ERROR("Unexpected token: {} at line: {} column: {}",
 			             token.Lexeme.has_value() ? token.Lexeme.value() : TokenTypeToStringRepresentation(token.Type),
-			             token.Line, token.Column);
+			             token.Location.Line, token.Location.Column);
 
 			m_IsValid = false;
 		}
@@ -97,7 +97,7 @@ namespace WandeltCore
 
 			if (GetCurrentToken().Type != TokenType::RIGHT_PARENTHESES)
 			{
-				SYSTEM_ERROR("Expected ')' at line: {} column: {}.", token.Line, token.Column);
+				SYSTEM_ERROR("Expected ')' at line: {} column: {}.", token.Location.Line, token.Location.Column);
 
 				return nullptr;
 			}
@@ -114,8 +114,8 @@ namespace WandeltCore
 			return new NumberLiteral(std::stoi(token.Lexeme.value()));
 		}
 
-		SYSTEM_ERROR("Expected expression at line: {} column: {}. Received: {}.", token.Line, token.Column,
-		             TokenTypeToString(token.Type));
+		SYSTEM_ERROR("Expected expression at line: {} column: {}. Received: {}.", token.Location.Line,
+		             token.Location.Column, TokenTypeToString(token.Type));
 
 		return nullptr;
 	}
@@ -184,8 +184,8 @@ namespace WandeltCore
 
 			if (afterToken.Type != TokenType::SEMICOLON)
 			{
-				SYSTEM_ERROR("Expected ';' after the return keyword. At line: {} column: {}.", afterToken.Line,
-				             afterToken.Column);
+				SYSTEM_ERROR("Expected ';' after the return keyword. At line: {} column: {}.", afterToken.Location.Line,
+				             afterToken.Location.Column);
 
 				return nullptr;
 			}
@@ -195,7 +195,8 @@ namespace WandeltCore
 			return new ReturnStatement(expr);
 		}
 
-		SYSTEM_ERROR("Expected ';' after the return keyword. At line: {} column: {}.", token.Line, token.Column);
+		SYSTEM_ERROR("Expected ';' after the return keyword. At line: {} column: {}.", token.Location.Line,
+		             token.Location.Column);
 
 		return nullptr;
 	}

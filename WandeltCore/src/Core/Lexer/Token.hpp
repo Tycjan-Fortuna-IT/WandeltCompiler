@@ -52,8 +52,7 @@ namespace WandeltCore
 	{
 		TokenType Type;
 		std::optional<std::string> Lexeme = std::nullopt;
-		u32 Line;
-		u32 Column;
+		SourceLocation Location;
 	};
 
 	static const std::unordered_map<std::string_view, TokenType> Keywords = {{"let", TokenType::LET_KEYWORD},

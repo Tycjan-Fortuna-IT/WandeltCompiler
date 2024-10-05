@@ -45,7 +45,7 @@ namespace WandeltCore
 				SYSTEM_DEBUG("Token [{}]: {} at line: {} column: {}", TokenTypeToString(token.Type),
 				             token.Lexeme.has_value() ? token.Lexeme.value()
 				                                      : TokenTypeToStringRepresentation(token.Type),
-				             token.Line, token.Column);
+				             token.Location.Line, token.Location.Column);
 			}
 		}
 

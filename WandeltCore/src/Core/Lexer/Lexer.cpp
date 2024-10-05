@@ -2,8 +2,8 @@
 
 #include "Core/FileSystem/FileSystem.hpp"
 
-#define TOKEN_CASE(x) \
-	AddToken(x);      \
+#define TOKEN_CASE(x)                \
+	AddToken(tokenStartLocation, x); \
 	break;
 namespace WandeltCore
 {
@@ -29,7 +29,7 @@ namespace WandeltCore
 			ScanToken();
 		}
 
-		AddToken(TokenType::END_OF_FILE);
+		AddToken({m_Filename, m_Line, m_Column}, TokenType::END_OF_FILE);
 	}
 
 	bool Lexer::IsMatchingNext(char expected)
@@ -47,6 +47,14 @@ namespace WandeltCore
 
 	char Lexer::Advance()
 	{
+		++m_Column;
+
+		if (m_Source[m_Current] == '\n')
+		{
+			++m_Line;
+			m_Column = 0;
+		}
+
 		return m_Source[m_Current++];
 	}
 
@@ -59,15 +67,15 @@ namespace WandeltCore
 	{
 		char c = Advance();
 
+		const SourceLocation tokenStartLocation = {m_Filename, m_Line, m_Column};
+
 		switch (c)
 		{
 		case ' ':
 		case '\r':
 		case '\t':
-			// Ignore whitespace.
-			break;
 		case '\n':
-			++m_Line;
+			// Ignore whitespace.
 			break;
 		case ';':
 			TOKEN_CASE(TokenType::SEMICOLON);
@@ -135,7 +143,7 @@ namespace WandeltCore
 			{
 				while (IsDigit(LookAhead())) Advance();
 
-				AddToken(TokenType::NUMBER, m_Source.substr(m_Start, m_Current - m_Start));
+				AddToken(tokenStartLocation, TokenType::NUMBER, m_Source.substr(m_Start, m_Current - m_Start));
 
 				break;
 			}
@@ -148,7 +156,7 @@ namespace WandeltCore
 				auto it = Keywords.find(lexeme);
 				if (it != Keywords.end())
 				{
-					AddToken(it->second);
+					AddToken(tokenStartLocation, it->second);
 				}
 				else
 				{
@@ -156,17 +164,18 @@ namespace WandeltCore
 					{
 						SYSTEM_ERROR(
 						    "Variable names must start with a $ character. Missing $ before: {} at line: {} column: {}",
-						    lexeme, m_Line, m_Current - m_Start - lexeme.size() + 1);
+						    lexeme, tokenStartLocation.Line, tokenStartLocation.Column);
 						break;
 					}
 
-					AddToken(TokenType::IDENTIFIER, lexeme);
+					AddToken(tokenStartLocation, TokenType::IDENTIFIER, lexeme);
 				}
 
 				break;
 			}
 
-			SYSTEM_ERROR("Unexpected character: {} at line: {} column: {}. Skipping.", c, m_Line, m_Current - m_Start);
+			SYSTEM_ERROR("Unexpected character: {} at line: {} column: {}. Skipping.", c, tokenStartLocation.Line,
+			             tokenStartLocation.Column);
 
 			m_IsValid = false;
 
@@ -174,14 +183,14 @@ namespace WandeltCore
 		}
 	}
 
-	void Lexer::AddToken(TokenType type)
+	void Lexer::AddToken(const SourceLocation& location, TokenType type)
 	{
-		m_Tokens.push_back(Token{type, std::nullopt, m_Line, m_Start + 1});
+		m_Tokens.push_back(Token{type, std::nullopt, location});
 	}
 
-	void Lexer::AddToken(TokenType type, const std::string& lexeme)
+	void Lexer::AddToken(const SourceLocation& location, TokenType type, const std::string& lexeme)
 	{
-		m_Tokens.push_back(Token{type, lexeme, m_Line, m_Start + 1});
+		m_Tokens.push_back(Token{type, lexeme, location});
 	}
 
 	//

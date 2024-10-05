@@ -112,6 +112,31 @@ namespace WandeltCore
 		llvm::Value* base     = GenerateExpression(powerExpression->GetBase());
 		llvm::Value* exponent = GenerateExpression(powerExpression->GetExponent());
 
+		// if base and exponent are numbers, we can calculate the result at compile time
+		if (llvm::ConstantInt* baseConstant = llvm::dyn_cast<llvm::ConstantInt>(base))
+		{
+			if (llvm::ConstantInt* exponentConstant = llvm::dyn_cast<llvm::ConstantInt>(exponent))
+			{
+				llvm::APInt baseValue = baseConstant->getValue();
+				int64_t exponentValue = exponentConstant->getValue().getSExtValue();
+
+				llvm::APInt result = baseValue;
+				if (exponentValue == 0)
+				{
+					result = llvm::APInt(baseValue.getBitWidth(), 1); // base^0 = 1
+				}
+				else
+				{
+					for (int64_t i = 1; i < exponentValue; ++i)
+					{
+						result *= baseValue;
+					}
+				}
+
+				return llvm::ConstantInt::get(base->getType(), result);
+			}
+		}
+
 		llvm::Function* function = m_Builder.GetInsertBlock()->getParent();
 
 		llvm::BasicBlock* entryBlock     = m_Builder.GetInsertBlock();
@@ -168,8 +193,6 @@ namespace WandeltCore
 
 	llvm::Value* Codegen::GenerateReturnStatement(ReturnStatement* returnStatement)
 	{
-		llvm::Type* int32Type = llvm::Type::getInt32Ty(m_Context);
-
 		llvm::Function* mainFunction = m_Module.getFunction("main");
 
 		llvm::BasicBlock* entryBlock = &mainFunction->getEntryBlock();
