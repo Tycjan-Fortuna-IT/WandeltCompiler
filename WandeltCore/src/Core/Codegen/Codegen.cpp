@@ -10,6 +10,7 @@ namespace WandeltCore
 	Codegen::Codegen() : m_Builder(llvm::IRBuilder<>(m_Context)), m_Module(llvm::Module("wandelt", m_Context))
 	{
 		m_Module.setTargetTriple(llvm::sys::getDefaultTargetTriple());
+		m_Module.setDataLayout("e-m:e-p:32:32-i64:64-f80:32-n8:16:32-S128");
 	}
 
 	void Codegen::GenerateIR(const std::vector<Expression*>& expressions)

@@ -23,7 +23,7 @@ namespace WandeltCore
 	class NumberLiteral : public Expression
 	{
 	public:
-		NumberLiteral(i32 value) : m_Value(value) {}
+		explicit NumberLiteral(i32 value) : m_Value(value) {}
 
 		std::string ToString() const override { return "NumberLiteral: " + std::to_string(m_Value); }
 
@@ -40,7 +40,7 @@ namespace WandeltCore
 		    : m_Left(left), m_Right(right), m_Operator(op)
 		{
 		}
-		~BinaryExpression()
+		~BinaryExpression() override
 		{
 			delete m_Left;
 			delete m_Right;
@@ -68,7 +68,7 @@ namespace WandeltCore
 	{
 	public:
 		UnaryExpression(Expression* operand, TokenType op) : m_Operand(operand), m_Operator(op) {}
-		~UnaryExpression() { delete m_Operand; }
+		~UnaryExpression() override { delete m_Operand; }
 
 		std::string ToString() const override
 		{
@@ -88,7 +88,7 @@ namespace WandeltCore
 	{
 	public:
 		PowerExpression(Expression* base, Expression* exponent) : m_Base(base), m_Exponent(exponent) {}
-		~PowerExpression()
+		~PowerExpression() override
 		{
 			delete m_Base;
 			delete m_Exponent;
@@ -110,8 +110,8 @@ namespace WandeltCore
 	class GroupingExpression : public Expression
 	{
 	public:
-		GroupingExpression(Expression* expression) : m_Expression(expression) {}
-		~GroupingExpression() { delete m_Expression; }
+		explicit GroupingExpression(Expression* expression) : m_Expression(expression) {}
+		~GroupingExpression() override { delete m_Expression; }
 
 		std::string ToString() const override { return "GroupingExpression: " + m_Expression->ToString(); }
 
@@ -124,8 +124,8 @@ namespace WandeltCore
 	class ReturnStatement : public Expression
 	{
 	public:
-		ReturnStatement(Expression* expression) : m_Expression(expression) {}
-		~ReturnStatement() { delete m_Expression; }
+		explicit ReturnStatement(Expression* expression) : m_Expression(expression) {}
+		~ReturnStatement() override { delete m_Expression; }
 
 		std::string ToString() const override
 		{
