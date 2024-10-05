@@ -33,7 +33,7 @@
 
 namespace WandeltCore
 {
-	class Codegen
+	class Codegen : public Visitor
 	{
 	public:
 		Codegen();
@@ -47,11 +47,13 @@ namespace WandeltCore
 		void GenerateEntrypoint();
 
 		llvm::Value* GenerateExpression(Expression* expression);
-		llvm::Value* GenerateBinaryExpression(BinaryExpression* binaryExpression);
-		llvm::Value* GeneratePowerExpression(PowerExpression* powerExpression);
-		llvm::Value* GenerateUnaryExpression(UnaryExpression* unaryExpression);
 
-		void GenerateReturnStatement(ReturnStatement* returnStatement);
+		llvm::Value* GenerateNumberLiteral(NumberLiteral* numberLiteral) override;
+		llvm::Value* GenerateBinaryExpression(BinaryExpression* binaryExpression) override;
+		llvm::Value* GenerateUnaryExpression(UnaryExpression* unaryExpression) override;
+		llvm::Value* GeneratePowerExpression(PowerExpression* powerExpression) override;
+		llvm::Value* GenerateGroupingExpression(GroupingExpression* groupingExpression) override;
+		llvm::Value* GenerateReturnStatement(ReturnStatement* returnStatement) override;
 
 	private:
 		llvm::LLVMContext m_Context;

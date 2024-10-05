@@ -8,6 +8,7 @@
  */
 #pragma once
 
+#include "Core/AST/Visitor.hpp"
 #include "Core/Lexer/Token.hpp"
 
 namespace WandeltCore
@@ -31,6 +32,8 @@ namespace WandeltCore
 	public:
 		virtual ~Expression() = default;
 
+		virtual llvm::Value* GenerateExpression(Visitor* visitor) = 0;
+
 		virtual std::string ToString() const = 0;
 	};
 
@@ -38,6 +41,8 @@ namespace WandeltCore
 	{
 	public:
 		explicit NumberLiteral(i32 value) : m_Value(value) {}
+
+		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateNumberLiteral(this); }
 
 		std::string ToString() const override { return "NumberLiteral: " + std::to_string(m_Value); }
 
@@ -59,6 +64,8 @@ namespace WandeltCore
 			delete m_Left;
 			delete m_Right;
 		}
+
+		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateBinaryExpression(this); }
 
 		std::string ToString() const override
 		{
@@ -84,6 +91,8 @@ namespace WandeltCore
 		UnaryExpression(Expression* operand, TokenType op) : m_Operand(operand), m_Operator(op) {}
 		~UnaryExpression() override { delete m_Operand; }
 
+		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateUnaryExpression(this); }
+
 		std::string ToString() const override
 		{
 			return "UnaryExpression: " + std::string(TokenTypeToString(m_Operator)) + " " + m_Operand->ToString();
@@ -108,6 +117,8 @@ namespace WandeltCore
 			delete m_Exponent;
 		}
 
+		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GeneratePowerExpression(this); }
+
 		std::string ToString() const override
 		{
 			return "PowerExpression: " + m_Base->ToString() + " ** " + m_Exponent->ToString();
@@ -127,6 +138,8 @@ namespace WandeltCore
 		explicit GroupingExpression(Expression* expression) : m_Expression(expression) {}
 		~GroupingExpression() override { delete m_Expression; }
 
+		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateGroupingExpression(this); }
+
 		std::string ToString() const override { return "GroupingExpression: " + m_Expression->ToString(); }
 
 		Expression* GetExpression() const { return m_Expression; }
@@ -140,6 +153,8 @@ namespace WandeltCore
 	public:
 		explicit ReturnStatement(Expression* expression) : m_Expression(expression) {}
 		~ReturnStatement() override { delete m_Expression; }
+
+		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateReturnStatement(this); }
 
 		std::string ToString() const override
 		{

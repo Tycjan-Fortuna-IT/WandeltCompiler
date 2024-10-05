@@ -56,24 +56,19 @@ namespace WandeltCore
 
 	llvm::Value* Codegen::GenerateExpression(Expression* expression)
 	{
-		if (NumberLiteral* numberLiteral = dynamic_cast<NumberLiteral*>(expression))
-			return llvm::ConstantInt::get(m_Builder.getInt32Ty(), numberLiteral->GetValue());
+		llvm::Value* result = expression->GenerateExpression(this);
 
-		if (BinaryExpression* binaryExpression = dynamic_cast<BinaryExpression*>(expression))
-			return GenerateBinaryExpression(binaryExpression);
-
-		if (GroupingExpression* groupingExpression = dynamic_cast<GroupingExpression*>(expression))
-			return GenerateExpression(groupingExpression->GetExpression());
-
-		if (PowerExpression* powerExpression = dynamic_cast<PowerExpression*>(expression))
-			return GeneratePowerExpression(powerExpression);
-
-		if (UnaryExpression* unaryExpression = dynamic_cast<UnaryExpression*>(expression))
-			return GenerateUnaryExpression(unaryExpression);
+		if (result)
+			return result;
 
 		llvm_unreachable("unexpected expression");
 
 		return nullptr;
+	}
+
+	llvm::Value* Codegen::GenerateNumberLiteral(NumberLiteral* numberLiteral)
+	{
+		return llvm::ConstantInt::get(m_Builder.getInt32Ty(), numberLiteral->GetValue());
 	}
 
 	llvm::Value* Codegen::GenerateBinaryExpression(BinaryExpression* binaryExpression)
@@ -95,6 +90,19 @@ namespace WandeltCore
 			return m_Builder.CreateSRem(lhs, rhs);
 
 		llvm_unreachable("unexpected binary operator");
+
+		return nullptr;
+	}
+
+	llvm::Value* Codegen::GenerateUnaryExpression(UnaryExpression* unaryExpression)
+	{
+		llvm::Value* operand = GenerateExpression(unaryExpression->GetOperand());
+		const TokenType& op  = unaryExpression->GetOperator();
+
+		if (op == TokenType::MINUS)
+			return m_Builder.CreateNeg(operand);
+
+		llvm_unreachable("unexpected unary operator");
 
 		return nullptr;
 	}
@@ -153,20 +161,12 @@ namespace WandeltCore
 		return resultPhi;
 	}
 
-	llvm::Value* Codegen::GenerateUnaryExpression(UnaryExpression* unaryExpression)
+	llvm::Value* Codegen::GenerateGroupingExpression(GroupingExpression* groupingExpression)
 	{
-		llvm::Value* operand = GenerateExpression(unaryExpression->GetOperand());
-		const TokenType& op  = unaryExpression->GetOperator();
-
-		if (op == TokenType::MINUS)
-			return m_Builder.CreateNeg(operand);
-
-		llvm_unreachable("unexpected unary operator");
-
-		return nullptr;
+		return GenerateExpression(groupingExpression->GetExpression());
 	}
 
-	void Codegen::GenerateReturnStatement(ReturnStatement* returnStatement)
+	llvm::Value* Codegen::GenerateReturnStatement(ReturnStatement* returnStatement)
 	{
 		llvm::Type* int32Type = llvm::Type::getInt32Ty(m_Context);
 
@@ -179,5 +179,7 @@ namespace WandeltCore
 		llvm::Value* returnValue = GenerateExpression(returnStatement->GetExpression());
 
 		m_Builder.CreateRet(returnValue);
+
+		return nullptr;
 	}
 } // namespace WandeltCore
