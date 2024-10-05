@@ -8,6 +8,12 @@
  */
 #pragma once
 
+#define valueOrReturnNullptr(type, variable, value) \
+	SYSTEM_WARN("Returning null: {}", #value);      \
+	type variable = value;                          \
+	if (!variable)                                  \
+		return nullptr;
+
 namespace WandeltCore
 {
 	struct SourceLocation
@@ -16,15 +22,6 @@ namespace WandeltCore
 		u32 Line;
 		u32 Column;
 	};
-
-	template <typename T>
-	FORCE_INLINE T* valueOrReturnNullptr(T* value)
-	{
-		if (!value)
-			return nullptr;
-
-		return value;
-	}
 
 	[[nodiscard]] static std::string getIndent(u32 level)
 	{

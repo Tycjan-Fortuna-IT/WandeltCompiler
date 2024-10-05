@@ -21,7 +21,7 @@ namespace WandeltCore
 
 		void Parse();
 
-		const std::vector<Expression*>& GetExpressions() const { return m_Expressions; }
+		const std::vector<Statement*>& GetStatements() const { return m_Statements; }
 
 		bool IsValid() const { return m_IsValid; }
 
@@ -55,7 +55,12 @@ namespace WandeltCore
 		Expression* ParseExpression();
 		Expression* ParseExpressionRHS(Expression*& lhs, i32 precedence);
 
-		Expression* ParseReturnStatement();
+		Scope* ParseScope();
+
+		Statement* ParseStatement();
+
+		Statement* ParseIfStatement();
+		Statement* ParseReturnStatement();
 
 	private:
 		i32 m_Current = 0;
@@ -63,6 +68,6 @@ namespace WandeltCore
 		bool m_IsValid = true; // Whether the parser is in a valid state. Meaning no errors have occurred.
 
 		std::vector<Token> m_Tokens;
-		std::vector<Expression*> m_Expressions;
+		std::vector<Statement*> m_Statements;
 	};
 } // namespace WandeltCore

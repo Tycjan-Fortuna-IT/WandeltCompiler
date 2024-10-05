@@ -18,6 +18,8 @@ namespace WandeltCore
 		// Keywords
 		LET_KEYWORD,    // let
 		RETURN_KEYWORD, // return
+		IF_KEYWORD,     // if
+		ELSE_KEYWORD,   // else
 
 		// Braces
 		LEFT_PARENTHESES,  // (
@@ -33,6 +35,14 @@ namespace WandeltCore
 		DOUBLE_STAR, // **
 		SLASH,       // /
 		PERCENT,     // %
+
+		// Comparison
+		EQUAL_EQUAL,   // ==
+		BANG_EQUAL,    // !=
+		LESS,          // <
+		LESS_EQUAL,    // <=
+		GREATER,       // >
+		GREATER_EQUAL, // >=
 
 		// Punctuation
 		SEMICOLON, // ;
@@ -56,5 +66,7 @@ namespace WandeltCore
 	};
 
 	static const std::unordered_map<std::string_view, TokenType> Keywords = {{"let", TokenType::LET_KEYWORD},
-	                                                                         {"return", TokenType::RETURN_KEYWORD}};
+	                                                                         {"return", TokenType::RETURN_KEYWORD},
+	                                                                         {"if", TokenType::IF_KEYWORD},
+	                                                                         {"else", TokenType::ELSE_KEYWORD}};
 } // namespace WandeltCore

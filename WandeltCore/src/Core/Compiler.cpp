@@ -63,22 +63,22 @@ namespace WandeltCore
 			parser.Parse();
 		}
 
-		std::vector<Expression*> expressions = parser.GetExpressions();
+		std::vector<Statement*> statements = parser.GetStatements();
 
 		if (m_Args.Flags & CompilerFlags::VerboseParser)
 		{
-			SYSTEM_DEBUG("Expressions: ");
+			SYSTEM_DEBUG("Statements: ");
 
-			for (Expression* expression : expressions)
+			for (Statement* statement : statements)
 			{
-				if (expression == nullptr)
+				if (statement == nullptr)
 				{
-					SYSTEM_DEBUG("Expression is nullptr.");
+					SYSTEM_DEBUG("Statements is nullptr.");
 
 					continue;
 				}
 
-				expression->Dump();
+				statement->Dump();
 			}
 		}
 
@@ -92,7 +92,7 @@ namespace WandeltCore
 		Codegen codegen;
 		{
 			ScopedTimer timer("Generating IR took: {} ms, {} ns");
-			codegen.GenerateIR(expressions);
+			codegen.GenerateIR(statements);
 		}
 
 		if (m_Args.Flags & CompilerFlags::VerboseCodegen)

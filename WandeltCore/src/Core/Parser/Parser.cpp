@@ -10,23 +10,41 @@ namespace WandeltCore
 
 	Parser::~Parser()
 	{
-		for (Expression* expression : m_Expressions) delete expression;
+		for (Statement* statement : m_Statements) delete statement;
 	}
 
 	void Parser::Parse()
 	{
 		while (!IsAtEnd())
 		{
-			if (m_Tokens.at(m_Current).Type == TokenType::RETURN_KEYWORD)
+			const TokenType type = GetCurrentToken().Type;
+
+			SYSTEM_WARN("Parsing token: {}", TokenTypeToString(type));
+
+			if (type == TokenType::IF_KEYWORD)
 			{
-				Expression* expr = ParseReturnStatement();
+				// Parse if statement
+				Statement* ifStatement = ParseIfStatement();
+				if (!ifStatement)
+				{
+					SynchronizeAfterError();
+					continue;
+				}
+
+				m_Statements.push_back(ifStatement);
+
+				continue;
+			}
+			else if (type == TokenType::RETURN_KEYWORD)
+			{
+				Statement* expr = ParseReturnStatement();
 				if (!expr)
 				{
 					SynchronizeAfterError();
 					continue;
 				}
 
-				m_Expressions.push_back(expr);
+				m_Statements.push_back(expr);
 
 				continue;
 			}
@@ -35,7 +53,7 @@ namespace WandeltCore
 			if (token.Type == TokenType::END_OF_FILE)
 				break;
 
-			SYSTEM_ERROR("Unexpected token: {} at line: {} column: {}",
+			SYSTEM_ERROR("[Parser] Unexpected token: {} at line: {} column: {}",
 			             token.Lexeme.has_value() ? token.Lexeme.value() : TokenTypeToStringRepresentation(token.Type),
 			             token.Location.Line, token.Location.Column);
 
@@ -104,14 +122,14 @@ namespace WandeltCore
 
 			EatCurrentToken(); // eat the right parentheses
 
-			return new GroupingExpression(expr);
+			return new GroupingExpression(token.Location, expr);
 		}
 
 		if (token.Type == TokenType::NUMBER)
 		{
 			EatCurrentToken();
 
-			return new NumberLiteral(std::stoi(token.Lexeme.value()));
+			return new NumberLiteral(token.Location, std::stoi(token.Lexeme.value()));
 		}
 
 		SYSTEM_ERROR("Expected expression at line: {} column: {}. Received: {}.", token.Location.Line,
@@ -128,9 +146,9 @@ namespace WandeltCore
 		{
 			EatCurrentToken();
 
-			Expression* expr = valueOrReturnNullptr(ParseLiteral());
+			valueOrReturnNullptr(Expression*, expr, ParseLiteral());
 
-			return new UnaryExpression(expr, token.Type);
+			return new UnaryExpression(token.Location, expr, token.Type);
 		}
 
 		return ParseLiteral();
@@ -138,7 +156,7 @@ namespace WandeltCore
 
 	Expression* Parser::ParseExpression()
 	{
-		Expression* lhs = valueOrReturnNullptr(ParsePrefixExpression());
+		valueOrReturnNullptr(Expression*, lhs, ParsePrefixExpression());
 
 		return ParseExpressionRHS(lhs, 0);
 	}
@@ -155,30 +173,96 @@ namespace WandeltCore
 
 			EatCurrentToken();
 
-			Expression* rhs = valueOrReturnNullptr(ParseLiteral());
+			valueOrReturnNullptr(Expression*, rhs, ParseLiteral());
 
 			if (tokenPrecedence < GetTokenPrecedence(GetCurrentToken().Type))
 			{
-				rhs = valueOrReturnNullptr(ParseExpressionRHS(rhs, tokenPrecedence + 1));
+				rhs = ParseExpressionRHS(rhs, tokenPrecedence + 1);
 			}
 
 			if (token.Type == TokenType::DOUBLE_STAR)
-				lhs = new PowerExpression(lhs, rhs);
+				lhs = new PowerExpression(token.Location, lhs, rhs);
 			else
-				lhs = new BinaryExpression(lhs, rhs, token.Type);
+				lhs = new BinaryExpression(token.Location, lhs, rhs, token.Type);
 		}
 
 		return lhs;
 	}
 
-	Expression* Parser::ParseReturnStatement()
+	Scope* Parser::ParseScope()
+	{
+		const Token& token = GetAndEatCurrentToken(); // eat the left brace
+
+		std::vector<Statement*> statements;
+
+		while (true)
+		{
+			const Token& currentToken = GetCurrentToken();
+
+			if (currentToken.Type == TokenType::RIGHT_BRACE)
+				break;
+
+			if (currentToken.Type == TokenType::END_OF_FILE)
+			{
+				SYSTEM_ERROR("Expected '}' at line: {} column: {}.", currentToken.Location.Line,
+				             currentToken.Location.Column);
+				return nullptr;
+			}
+
+			Statement* statement = ParseStatement();
+			if (!statement)
+			{
+				SynchronizeAfterError();
+				continue;
+			}
+
+			statements.push_back(statement);
+		}
+
+		EatCurrentToken(); // eat the right brace
+
+		return new Scope(token.Location, statements);
+	}
+
+	Statement* Parser::ParseStatement()
+	{
+		const Token& token = GetCurrentToken();
+
+		if (token.Type == TokenType::IF_KEYWORD)
+		{
+			return ParseIfStatement();
+		}
+		else if (token.Type == TokenType::RETURN_KEYWORD)
+		{
+			return ParseReturnStatement();
+		}
+
+		SYSTEM_ERROR("Unexpected token: {} at line: {} column: {}",
+		             token.Lexeme.has_value() ? token.Lexeme.value() : TokenTypeToStringRepresentation(token.Type),
+		             token.Location.Line, token.Location.Column);
+
+		return nullptr;
+	}
+
+	Statement* Parser::ParseIfStatement()
+	{
+		const Token& token = GetAndEatCurrentToken(); // eat the if keyword
+
+		valueOrReturnNullptr(Expression*, condition, ParseExpression());
+
+		valueOrReturnNullptr(Scope*, trueBlock, ParseScope());
+
+		return new IfStatement(token.Location, condition, trueBlock, nullptr);
+	}
+
+	Statement* Parser::ParseReturnStatement()
 	{
 		EatCurrentToken(); // eat the return keyword
 		const Token& token = GetCurrentToken();
 
 		if (token.Type != TokenType::SEMICOLON)
 		{
-			Expression* expr = valueOrReturnNullptr(ParseExpression());
+			valueOrReturnNullptr(Expression*, expr, ParseExpression());
 
 			const Token& afterToken = GetCurrentToken(); // should be a semicolon
 
@@ -192,7 +276,7 @@ namespace WandeltCore
 
 			EatCurrentToken();
 
-			return new ReturnStatement(expr);
+			return new ReturnStatement(token.Location, expr);
 		}
 
 		SYSTEM_ERROR("Expected ';' after the return keyword. At line: {} column: {}.", token.Location.Line,

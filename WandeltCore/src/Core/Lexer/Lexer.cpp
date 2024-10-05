@@ -79,8 +79,6 @@ namespace WandeltCore
 			break;
 		case ';':
 			TOKEN_CASE(TokenType::SEMICOLON);
-		case '=':
-			TOKEN_CASE(TokenType::EQUALS);
 		case '(':
 			TOKEN_CASE(TokenType::LEFT_PARENTHESES);
 		case ')':
@@ -93,6 +91,49 @@ namespace WandeltCore
 			TOKEN_CASE(TokenType::PLUS);
 		case '-':
 			TOKEN_CASE(TokenType::MINUS);
+		case '=': {
+			if (IsMatchingNext('='))
+			{
+				TOKEN_CASE(TokenType::EQUAL_EQUAL);
+			}
+			else
+			{
+				TOKEN_CASE(TokenType::EQUALS);
+			}
+		}
+		case '!': {
+			if (IsMatchingNext('='))
+			{
+				TOKEN_CASE(TokenType::BANG_EQUAL);
+			}
+			else
+			{
+				SYSTEM_ERROR("Unexpected character: {} at line: {} column: {}. Skipping.", c, tokenStartLocation.Line,
+				             tokenStartLocation.Column);
+
+				m_IsValid = false;
+			}
+		}
+		case '<': {
+			if (IsMatchingNext('='))
+			{
+				TOKEN_CASE(TokenType::LESS_EQUAL);
+			}
+			else
+			{
+				TOKEN_CASE(TokenType::LESS);
+			}
+		}
+		case '>': {
+			if (IsMatchingNext('='))
+			{
+				TOKEN_CASE(TokenType::GREATER_EQUAL);
+			}
+			else
+			{
+				TOKEN_CASE(TokenType::GREATER);
+			}
+		}
 		case '*': {
 			if (IsMatchingNext('*'))
 			{
@@ -113,9 +154,6 @@ namespace WandeltCore
 				// A block comment goes until the end of the block.
 				while (!(LookAhead() == '*' && LookAhead(1) == '/') && !IsAtEnd())
 				{
-					if (LookAhead() == '\n')
-						++m_Line;
-
 					Advance();
 				}
 

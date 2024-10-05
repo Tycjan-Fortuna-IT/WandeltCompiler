@@ -39,7 +39,7 @@ namespace WandeltCore
 		Codegen();
 		~Codegen();
 
-		void GenerateIR(const std::vector<Expression*>& expressions);
+		void GenerateIR(const std::vector<Statement*>& statements);
 
 		const llvm::Module& GetModuleWithGeneratedIR() const { return m_Module; }
 
@@ -53,6 +53,8 @@ namespace WandeltCore
 		llvm::Value* GenerateUnaryExpression(UnaryExpression* unaryExpression) override;
 		llvm::Value* GeneratePowerExpression(PowerExpression* powerExpression) override;
 		llvm::Value* GenerateGroupingExpression(GroupingExpression* groupingExpression) override;
+
+		llvm::Value* GenerateIfStatement(IfStatement* ifStatement) override;
 		llvm::Value* GenerateReturnStatement(ReturnStatement* returnStatement) override;
 
 	private:

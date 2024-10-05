@@ -59,6 +59,41 @@ namespace WandeltCore
 			SYSTEM_DEBUG(getIndent(indentation + 1) + "nullptr");
 	}
 
+	void Scope::Dump(u32 indentation) const
+	{
+		SYSTEM_DEBUG(getIndent(indentation) + "Scope: ");
+
+		for (const auto& statement : m_Statements)
+		{
+			statement->Dump(indentation + 1);
+		}
+	}
+
+	void IfStatement::Dump(u32 indentation) const
+	{
+		SYSTEM_DEBUG(getIndent(indentation) + "IfStatement: ");
+		SYSTEM_DEBUG(getIndent(indentation + 1) + "Condition: ");
+
+		if (m_Condition)
+			m_Condition->Dump(indentation + 2);
+		else
+			SYSTEM_DEBUG(getIndent(indentation + 2) + "nullptr");
+
+		SYSTEM_DEBUG(getIndent(indentation + 1) + "Then: ");
+
+		if (m_ThenScope)
+			m_ThenScope->Dump(indentation + 2);
+		else
+			SYSTEM_DEBUG(getIndent(indentation + 2) + "nullptr");
+
+		SYSTEM_DEBUG(getIndent(indentation + 1) + "Else: ");
+
+		if (m_ElseScope)
+			m_ElseScope->Dump(indentation + 2);
+		else
+			SYSTEM_DEBUG(getIndent(indentation + 2) + "nullptr");
+	}
+
 	void ReturnStatement::Dump(u32 indentation) const
 	{
 		SYSTEM_DEBUG(getIndent(indentation) + "ReturnStatement: ");

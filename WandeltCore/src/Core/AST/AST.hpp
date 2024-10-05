@@ -26,36 +26,36 @@ namespace WandeltCore
 	//  DeclarationStatement
 	//   VariableDeclaration
 	//   FunctionDeclaration
-	class Statement
+	class Dumpable
 	{
 	public:
-		Statement(const SourceLocation& location) : m_Location(location) {}
+		virtual void Dump(u32 indentation = 0) const = 0;
+	};
+
+	class Statement : public Dumpable
+	{
+	public:
+		explicit Statement(const SourceLocation& location) : m_Location(location) {}
 		virtual ~Statement() = default;
 
 		const SourceLocation& GetLocation() const { return m_Location; }
 
 		virtual llvm::Value* GenerateExpression(Visitor* visitor) = 0;
 
-		virtual std::string ToString(u32 indentation = 0) const = 0;
-
 	private:
 		SourceLocation m_Location;
 	};
 
-	class Expression
+	class Expression : public Statement
 	{
 	public:
-		virtual ~Expression() = default;
-
-		virtual llvm::Value* GenerateExpression(Visitor* visitor) = 0;
-
-		virtual void Dump(u32 indentation = 0) const = 0;
+		explicit Expression(const SourceLocation& location) : Statement(location) {}
 	};
 
 	class NumberLiteral : public Expression
 	{
 	public:
-		explicit NumberLiteral(i32 value) : m_Value(value) {}
+		explicit NumberLiteral(const SourceLocation& location, i32 value) : Expression(location), m_Value(value) {}
 
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateNumberLiteral(this); }
 
@@ -70,8 +70,8 @@ namespace WandeltCore
 	class BinaryExpression : public Expression
 	{
 	public:
-		BinaryExpression(Expression* left, Expression* right, TokenType op)
-		    : m_Left(left), m_Right(right), m_Operator(op)
+		explicit BinaryExpression(const SourceLocation& location, Expression* left, Expression* right, TokenType op)
+		    : Expression(location), m_Left(left), m_Right(right), m_Operator(op)
 		{
 		}
 		~BinaryExpression() override
@@ -83,10 +83,6 @@ namespace WandeltCore
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateBinaryExpression(this); }
 
 		void Dump(u32 indentation = 0) const override;
-		// {
-		// 	return "BinaryExpression: " + m_Left->ToString() + " " + std::string(TokenTypeToString(m_Operator)) + " " +
-		// 	       m_Right->ToString();
-		// }
 
 		Expression* GetLeft() const { return m_Left; }
 		Expression* GetRight() const { return m_Right; }
@@ -103,15 +99,15 @@ namespace WandeltCore
 	class UnaryExpression : public Expression
 	{
 	public:
-		UnaryExpression(Expression* operand, TokenType op) : m_Operand(operand), m_Operator(op) {}
+		explicit UnaryExpression(const SourceLocation& location, Expression* operand, TokenType op)
+		    : Expression(location), m_Operand(operand), m_Operator(op)
+		{
+		}
 		~UnaryExpression() override { delete m_Operand; }
 
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateUnaryExpression(this); }
 
 		void Dump(u32 indentation = 0) const override;
-		// {
-		// 	return "UnaryExpression: " + std::string(TokenTypeToString(m_Operator)) + " " + m_Operand->ToString();
-		// }
 
 		Expression* GetOperand() const { return m_Operand; }
 
@@ -125,7 +121,10 @@ namespace WandeltCore
 	class PowerExpression : public Expression
 	{
 	public:
-		PowerExpression(Expression* base, Expression* exponent) : m_Base(base), m_Exponent(exponent) {}
+		explicit PowerExpression(const SourceLocation& location, Expression* base, Expression* exponent)
+		    : Expression(location), m_Base(base), m_Exponent(exponent)
+		{
+		}
 		~PowerExpression() override
 		{
 			delete m_Base;
@@ -135,9 +134,6 @@ namespace WandeltCore
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GeneratePowerExpression(this); }
 
 		void Dump(u32 indentation = 0) const override;
-		// {
-		// 	return "PowerExpression: " + m_Base->ToString() + " ** " + m_Exponent->ToString();
-		// }
 
 		Expression* GetBase() const { return m_Base; }
 		Expression* GetExponent() const { return m_Exponent; }
@@ -150,15 +146,15 @@ namespace WandeltCore
 	class GroupingExpression : public Expression
 	{
 	public:
-		explicit GroupingExpression(Expression* expression) : m_Expression(expression) {}
+		explicit GroupingExpression(const SourceLocation& location, Expression* expression)
+		    : Expression(location), m_Expression(expression)
+		{
+		}
 		~GroupingExpression() override { delete m_Expression; }
 
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateGroupingExpression(this); }
 
 		void Dump(u32 indentation = 0) const override;
-		// {
-		// 	return "GroupingExpression: " + m_Expression->ToString();
-		// }
 
 		Expression* GetExpression() const { return m_Expression; }
 
@@ -166,10 +162,59 @@ namespace WandeltCore
 		Expression* m_Expression = nullptr;
 	};
 
-	class ReturnStatement : public Expression
+	class Scope : public Dumpable
 	{
 	public:
-		explicit ReturnStatement(Expression* expression) : m_Expression(expression) {}
+		explicit Scope(const SourceLocation& location, const std::vector<Statement*>& statements)
+		    : m_Location(location), m_Statements(statements)
+		{
+		}
+
+		const SourceLocation& GetLocation() const { return m_Location; }
+		const std::vector<Statement*>& GetStatements() const { return m_Statements; }
+
+		void Dump(u32 indentation = 0) const override;
+
+	private:
+		SourceLocation m_Location;
+		std::vector<Statement*> m_Statements;
+	};
+
+	class IfStatement : public Statement
+	{
+	public:
+		IfStatement(const SourceLocation& location, Expression* condition, Scope* thenScope, Scope* elseScope)
+		    : Statement(location), m_Condition(condition), m_ThenScope(thenScope), m_ElseScope(elseScope)
+		{
+		}
+		~IfStatement() override
+		{
+			delete m_Condition;
+			delete m_ThenScope;
+			delete m_ElseScope;
+		}
+
+		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateIfStatement(this); }
+
+		void Dump(u32 indentation = 0) const override;
+
+		Expression* GetCondition() const { return m_Condition; }
+		Scope* GetThenScope() const { return m_ThenScope; }
+		Scope* GetElseScope() const { return m_ElseScope; }
+
+	private:
+		Expression* m_Condition = nullptr;
+		Scope* m_ThenScope      = nullptr;
+		Scope* m_ElseScope      = nullptr;
+	};
+
+	class ReturnStatement : public Statement
+	{
+	public:
+		explicit ReturnStatement(const SourceLocation& location, Expression* expression)
+		    : Statement(location), m_Expression(expression)
+		{
+		}
 		~ReturnStatement() override { delete m_Expression; }
 
 		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateReturnStatement(this); }

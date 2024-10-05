@@ -17,11 +17,11 @@ namespace WandeltCore
 	{
 	}
 
-	void Codegen::GenerateIR(const std::vector<Expression*>& expressions)
+	void Codegen::GenerateIR(const std::vector<Statement*>& statements)
 	{
 		GenerateEntrypoint();
 
-		Expression* mainReturn = expressions.at(0);
+		Statement* mainReturn = statements.at(0);
 
 		GenerateReturnStatement((ReturnStatement*)mainReturn);
 
@@ -189,6 +189,12 @@ namespace WandeltCore
 	llvm::Value* Codegen::GenerateGroupingExpression(GroupingExpression* groupingExpression)
 	{
 		return GenerateExpression(groupingExpression->GetExpression());
+	}
+
+	llvm::Value* Codegen::GenerateIfStatement(IfStatement* ifStatement)
+	{
+		// TODO: Implement
+		return nullptr;
 	}
 
 	llvm::Value* Codegen::GenerateReturnStatement(ReturnStatement* returnStatement)
