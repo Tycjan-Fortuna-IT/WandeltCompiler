@@ -12,6 +12,20 @@
 
 namespace WandeltCore
 {
+	// Statement
+	//  Expression
+	//    NumberLiteral
+	//    BinaryExpression
+	//    UnaryExpression
+	//    PowerExpression
+	//    GroupingExpression
+	//  Type
+	//  ReturnStatement
+	//  IfStatement
+	//  DeclarationStatement
+	//   VariableDeclaration
+	//   FunctionDeclaration
+
 	class Expression
 	{
 	public:

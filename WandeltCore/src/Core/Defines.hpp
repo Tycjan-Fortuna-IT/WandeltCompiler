@@ -53,3 +53,17 @@ static_assert(sizeof(b32) == 4, "b32 is not 4 bytes");
 	#include <signal.h>
 	#define DEBUG_BREAK() raise(SIGTRAP)
 #endif
+
+#ifdef _MSC_VER
+	#define SW_COMPILER_MSVC
+#elif defined(__clang__)
+	#define SW_COMPILER_CLANG
+#elif defined(__GNUC__)
+	#define SW_COMPILER_GCC
+#endif
+
+#ifdef SW_COMPILER_MSVC
+	#define FORCE_INLINE __forceinline
+#else
+	#define FORCE_INLINE inline __attribute__((always_inline))
+#endif

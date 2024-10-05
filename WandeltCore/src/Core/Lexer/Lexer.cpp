@@ -1,11 +1,22 @@
 #include "Lexer.hpp"
 
+#include "Core/FileSystem/FileSystem.hpp"
+
 #define TOKEN_CASE(x) \
 	AddToken(x);      \
 	break;
 namespace WandeltCore
 {
-	Lexer::Lexer(const std::string& source) : m_Source(source)
+	Lexer::Lexer(const std::filesystem::path& filepath) : m_Filename(filepath.filename().string())
+	{
+		ASSERT(FileSystem::Exists(filepath), "Input file does not exist.");
+
+		SYSTEM_INFO("Input file: {}", filepath.filename());
+
+		m_Source = FileSystem::ReadFile(filepath);
+	}
+
+	Lexer::Lexer(const std::string& filename, const std::string& source) : m_Source(source), m_Filename(filename)
 	{
 	}
 

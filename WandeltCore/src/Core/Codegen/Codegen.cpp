@@ -13,6 +13,10 @@ namespace WandeltCore
 		m_Module.setDataLayout("e-m:e-p:32:32-i64:64-f80:32-n8:16:32-S128");
 	}
 
+	Codegen::~Codegen()
+	{
+	}
+
 	void Codegen::GenerateIR(const std::vector<Expression*>& expressions)
 	{
 		GenerateEntrypoint();

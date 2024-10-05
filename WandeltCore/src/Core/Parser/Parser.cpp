@@ -35,8 +35,9 @@ namespace WandeltCore
 			if (token.Type == TokenType::END_OF_FILE)
 				break;
 
-			SYSTEM_ERROR("Token not handled: {} at line: {} column: {}.", TokenTypeToString(token.Type), token.Line,
-			             token.Column);
+			SYSTEM_ERROR("Unexpected token: {} at line: {} column: {}",
+			             token.Lexeme.has_value() ? token.Lexeme.value() : TokenTypeToStringRepresentation(token.Type),
+			             token.Line, token.Column);
 
 			m_IsValid = false;
 		}
@@ -127,10 +128,7 @@ namespace WandeltCore
 		{
 			EatCurrentToken();
 
-			Expression* expr = ParseLiteral();
-
-			if (!expr)
-				return nullptr;
+			Expression* expr = valueOrReturnNullptr(ParseLiteral());
 
 			return new UnaryExpression(expr, token.Type);
 		}
@@ -140,10 +138,7 @@ namespace WandeltCore
 
 	Expression* Parser::ParseExpression()
 	{
-		Expression* lhs = ParsePrefixExpression();
-
-		if (!lhs)
-			return nullptr;
+		Expression* lhs = valueOrReturnNullptr(ParsePrefixExpression());
 
 		return ParseExpressionRHS(lhs, 0);
 	}
@@ -160,17 +155,11 @@ namespace WandeltCore
 
 			EatCurrentToken();
 
-			Expression* rhs = ParseLiteral();
-
-			if (!rhs)
-				return nullptr;
+			Expression* rhs = valueOrReturnNullptr(ParseLiteral());
 
 			if (tokenPrecedence < GetTokenPrecedence(GetCurrentToken().Type))
 			{
-				rhs = ParseExpressionRHS(rhs, tokenPrecedence + 1);
-
-				if (!rhs)
-					return nullptr;
+				rhs = valueOrReturnNullptr(ParseExpressionRHS(rhs, tokenPrecedence + 1));
 			}
 
 			if (token.Type == TokenType::DOUBLE_STAR)
@@ -189,11 +178,7 @@ namespace WandeltCore
 
 		if (token.Type != TokenType::SEMICOLON)
 		{
-			Expression* expr = ParseExpression();
-			if (!expr)
-			{
-				return nullptr;
-			}
+			Expression* expr = valueOrReturnNullptr(ParseExpression());
 
 			const Token& afterToken = GetCurrentToken(); // should be a semicolon
 

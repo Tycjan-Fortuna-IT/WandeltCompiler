@@ -10,13 +10,25 @@
 
 #include "Token.hpp"
 
+BEGIN_CAST_FORMATTER(std::filesystem::path);
+FORMATTER_CAST(std::string, value.string());
+END_CAST_FORMATTER;
+
+BEGIN_CAST_FORMATTER(std::string_view);
+FORMATTER_CAST(std::string, std::string(value));
+END_CAST_FORMATTER;
+
 namespace WandeltCore
 {
 	class Lexer
 	{
 	public:
-		Lexer(const std::string& source);
+		Lexer(const std::filesystem::path& filepath);
 
+		// Mostly for testing purposes
+		Lexer(const std::string& filename, const std::string& source);
+
+		// Lex the source code
 		void Lex();
 
 		const std::vector<Token>& GetTokens() const { return m_Tokens; }
@@ -48,7 +60,8 @@ namespace WandeltCore
 		void AddToken(TokenType type, const std::string& lexeme);
 
 	private:
-		std::string m_Source; // The source code
+		std::string m_Source;   // The source code
+		std::string m_Filename; // The filename
 
 		u32 m_Start   = 0; // The start of the current lexeme
 		u32 m_Current = 0; // The current character index
