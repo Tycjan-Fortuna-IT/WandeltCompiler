@@ -21,14 +21,13 @@ namespace WandeltCore
 	{
 		GenerateEntrypoint();
 
-		Statement* mainReturn = statements.back();
+		for (Statement* statement : statements) GenerateStatement(statement);
 
-		ReturnStatement* ret = dynamic_cast<ReturnStatement*>(mainReturn);
-
-		if (!ret)
-			ret = new ReturnStatement(SourceLocation{}, new NumberLiteral(SourceLocation{}, 0));
-
-		GenerateReturnStatement(ret);
+		// always return something
+		if (statements.empty() || !dynamic_cast<ReturnStatement*>(statements.back()))
+		{
+			GenerateStatement(new ReturnStatement(SourceLocation{}, new NumberLiteral(SourceLocation{}, 0)));
+		}
 
 		std::error_code ec;
 		llvm::raw_fd_ostream file("output.ll", ec, llvm::sys::fs::OF_Text);
@@ -55,13 +54,11 @@ namespace WandeltCore
 		llvm::BasicBlock* entryBlock = llvm::BasicBlock::Create(m_Context, "entry", mainFunction);
 
 		m_Builder.SetInsertPoint(entryBlock);
-
-		// m_Builder.CreateRet(llvm::ConstantInt::get(int32Type, 0));
 	}
 
-	llvm::Value* Codegen::GenerateExpression(Expression* expression)
+	llvm::Value* Codegen::GenerateStatement(Statement* statement)
 	{
-		llvm::Value* result = expression->GenerateExpression(this);
+		llvm::Value* result = statement->Generate(this);
 
 		if (result)
 			return result;
@@ -78,8 +75,8 @@ namespace WandeltCore
 
 	llvm::Value* Codegen::GenerateBinaryExpression(BinaryExpression* binaryExpression)
 	{
-		llvm::Value* lhs = GenerateExpression(binaryExpression->GetLeft());
-		llvm::Value* rhs = GenerateExpression(binaryExpression->GetRight());
+		llvm::Value* lhs = GenerateStatement(binaryExpression->GetLeft());
+		llvm::Value* rhs = GenerateStatement(binaryExpression->GetRight());
 
 		TokenType op = binaryExpression->GetOperator();
 
@@ -117,7 +114,7 @@ namespace WandeltCore
 
 	llvm::Value* Codegen::GenerateUnaryExpression(UnaryExpression* unaryExpression)
 	{
-		llvm::Value* operand = GenerateExpression(unaryExpression->GetOperand());
+		llvm::Value* operand = GenerateStatement(unaryExpression->GetOperand());
 		const TokenType& op  = unaryExpression->GetOperator();
 
 		if (op == TokenType::MINUS)
@@ -130,8 +127,8 @@ namespace WandeltCore
 
 	llvm::Value* Codegen::GeneratePowerExpression(PowerExpression* powerExpression)
 	{
-		llvm::Value* base     = GenerateExpression(powerExpression->GetBase());
-		llvm::Value* exponent = GenerateExpression(powerExpression->GetExponent());
+		llvm::Value* base     = GenerateStatement(powerExpression->GetBase());
+		llvm::Value* exponent = GenerateStatement(powerExpression->GetExponent());
 
 		// if base and exponent are numbers, we can calculate the result at compile time
 		if (llvm::ConstantInt* baseConstant = llvm::dyn_cast<llvm::ConstantInt>(base))
@@ -209,28 +206,61 @@ namespace WandeltCore
 
 	llvm::Value* Codegen::GenerateGroupingExpression(GroupingExpression* groupingExpression)
 	{
-		return GenerateExpression(groupingExpression->GetExpression());
+		return GenerateStatement(groupingExpression->GetExpression());
 	}
 
 	llvm::Value* Codegen::GenerateIfStatement(IfStatement* ifStatement)
 	{
-		// TODO: Implement
+		llvm::Function* fn = GetCurrentFunction();
+
+		const bool hasElse = ifStatement->HasElseScope();
+
+		llvm::Value* condition = GenerateStatement(ifStatement->GetCondition());
+
+		llvm::BasicBlock* exitBlock  = llvm::BasicBlock::Create(m_Context, "if.exit");
+		llvm::BasicBlock* trueBlock  = llvm::BasicBlock::Create(m_Context, "if.true");
+		llvm::BasicBlock* falseBlock = hasElse ? llvm::BasicBlock::Create(m_Context, "if.else") : exitBlock;
+
+		m_Builder.CreateCondBr(IntToBool(condition), trueBlock, falseBlock);
+
+		trueBlock->insertInto(fn);
+		m_Builder.SetInsertPoint(trueBlock);
+		GenerateScope(ifStatement->GetThenScope());
+		m_Builder.CreateBr(exitBlock);
+
+		if (hasElse)
+		{
+			falseBlock->insertInto(fn);
+			m_Builder.SetInsertPoint(falseBlock);
+			GenerateScope(ifStatement->GetElseScope());
+			m_Builder.CreateBr(exitBlock);
+		}
+
+		exitBlock->insertInto(fn);
+		m_Builder.SetInsertPoint(exitBlock);
+
 		return nullptr;
 	}
 
 	llvm::Value* Codegen::GenerateReturnStatement(ReturnStatement* returnStatement)
 	{
-		llvm::Function* mainFunction = m_Module.getFunction("main");
-
-		llvm::BasicBlock* entryBlock = &mainFunction->getEntryBlock();
-
-		m_Builder.SetInsertPoint(entryBlock);
-
-		llvm::Value* returnValue = GenerateExpression(returnStatement->GetExpression());
+		llvm::Value* returnValue = GenerateStatement(returnStatement->GetExpression());
 
 		m_Builder.CreateRet(returnValue);
 
 		return nullptr;
+	}
+
+	llvm::Value* Codegen::GenerateScope(Scope* scope)
+	{
+		for (Statement* statement : scope->GetStatements()) GenerateStatement(statement);
+
+		return nullptr;
+	}
+
+	llvm::Function* Codegen::GetCurrentFunction()
+	{
+		return m_Builder.GetInsertBlock()->getParent();
 	}
 
 	llvm::Value* Codegen::DoubleToBool(llvm::Value* val)

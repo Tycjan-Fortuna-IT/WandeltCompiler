@@ -40,7 +40,7 @@ namespace WandeltCore
 
 		const SourceLocation& GetLocation() const { return m_Location; }
 
-		virtual llvm::Value* GenerateExpression(Visitor* visitor) = 0;
+		virtual llvm::Value* Generate(Visitor* visitor) = 0;
 
 	private:
 		SourceLocation m_Location;
@@ -57,7 +57,7 @@ namespace WandeltCore
 	public:
 		explicit NumberLiteral(const SourceLocation& location, i32 value) : Expression(location), m_Value(value) {}
 
-		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateNumberLiteral(this); }
+		llvm::Value* Generate(Visitor* visitor) override { return visitor->GenerateNumberLiteral(this); }
 
 		void Dump(u32 indentation = 0) const override;
 
@@ -80,7 +80,7 @@ namespace WandeltCore
 			delete m_Right;
 		}
 
-		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateBinaryExpression(this); }
+		llvm::Value* Generate(Visitor* visitor) override { return visitor->GenerateBinaryExpression(this); }
 
 		void Dump(u32 indentation = 0) const override;
 
@@ -105,7 +105,7 @@ namespace WandeltCore
 		}
 		~UnaryExpression() override { delete m_Operand; }
 
-		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateUnaryExpression(this); }
+		llvm::Value* Generate(Visitor* visitor) override { return visitor->GenerateUnaryExpression(this); }
 
 		void Dump(u32 indentation = 0) const override;
 
@@ -131,7 +131,7 @@ namespace WandeltCore
 			delete m_Exponent;
 		}
 
-		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GeneratePowerExpression(this); }
+		llvm::Value* Generate(Visitor* visitor) override { return visitor->GeneratePowerExpression(this); }
 
 		void Dump(u32 indentation = 0) const override;
 
@@ -152,7 +152,7 @@ namespace WandeltCore
 		}
 		~GroupingExpression() override { delete m_Expression; }
 
-		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateGroupingExpression(this); }
+		llvm::Value* Generate(Visitor* visitor) override { return visitor->GenerateGroupingExpression(this); }
 
 		void Dump(u32 indentation = 0) const override;
 
@@ -194,9 +194,11 @@ namespace WandeltCore
 			delete m_ElseScope;
 		}
 
-		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateIfStatement(this); }
+		llvm::Value* Generate(Visitor* visitor) override { return visitor->GenerateIfStatement(this); }
 
 		void Dump(u32 indentation = 0) const override;
+
+		bool HasElseScope() const { return m_ElseScope != nullptr; }
 
 		Expression* GetCondition() const { return m_Condition; }
 		Scope* GetThenScope() const { return m_ThenScope; }
@@ -217,7 +219,7 @@ namespace WandeltCore
 		}
 		~ReturnStatement() override { delete m_Expression; }
 
-		llvm::Value* GenerateExpression(Visitor* visitor) override { return visitor->GenerateReturnStatement(this); }
+		llvm::Value* Generate(Visitor* visitor) override { return visitor->GenerateReturnStatement(this); }
 
 		void Dump(u32 indentation = 0) const override;
 

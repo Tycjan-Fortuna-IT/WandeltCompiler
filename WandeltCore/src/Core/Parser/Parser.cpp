@@ -257,9 +257,34 @@ namespace WandeltCore
 
 		valueOrReturnNullptr(Expression*, condition, ParseExpression());
 
-		valueOrReturnNullptr(Scope*, trueBlock, ParseScope());
+		valueOrReturnNullptr(Scope*, trueScope, ParseScope());
 
-		return new IfStatement(token.Location, condition, trueBlock, nullptr);
+		if (GetCurrentToken().Type != TokenType::ELSE_KEYWORD)
+			return new IfStatement(token.Location, condition, trueScope, nullptr);
+
+		EatCurrentToken(); // eat the else keyword
+
+		Scope* falseScope = nullptr;
+
+		const Token& nextToken = GetCurrentToken();
+
+		if (nextToken.Type == TokenType::IF_KEYWORD)
+		{
+			// else if
+			valueOrReturnNullptr(Statement*, elseIf, ParseIfStatement());
+
+			falseScope = new Scope(nextToken.Location, {elseIf});
+		}
+		else
+		{
+			// just else
+			falseScope = ParseScope();
+		}
+
+		if (!falseScope)
+			return nullptr;
+
+		return new IfStatement(token.Location, condition, trueScope, falseScope);
 	}
 
 	Statement* Parser::ParseReturnStatement()

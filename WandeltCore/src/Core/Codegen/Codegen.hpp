@@ -46,7 +46,7 @@ namespace WandeltCore
 	private:
 		void GenerateEntrypoint();
 
-		llvm::Value* GenerateExpression(Expression* expression);
+		llvm::Value* GenerateStatement(Statement* statement);
 
 		llvm::Value* GenerateNumberLiteral(NumberLiteral* numberLiteral) override;
 		llvm::Value* GenerateBinaryExpression(BinaryExpression* binaryExpression) override;
@@ -56,6 +56,10 @@ namespace WandeltCore
 
 		llvm::Value* GenerateIfStatement(IfStatement* ifStatement) override;
 		llvm::Value* GenerateReturnStatement(ReturnStatement* returnStatement) override;
+
+		llvm::Value* GenerateScope(Scope* scope);
+
+		llvm::Function* GetCurrentFunction();
 
 		llvm::Value* DoubleToBool(llvm::Value* val);
 		llvm::Value* BoolToDouble(llvm::Value* val);
