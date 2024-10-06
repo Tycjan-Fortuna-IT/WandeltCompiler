@@ -57,6 +57,15 @@ namespace WandeltCore
 		llvm::Value* GenerateIfStatement(IfStatement* ifStatement) override;
 		llvm::Value* GenerateReturnStatement(ReturnStatement* returnStatement) override;
 
+		llvm::Value* DoubleToBool(llvm::Value* val);
+		llvm::Value* BoolToDouble(llvm::Value* val);
+
+		llvm::Value* IntToBool(llvm::Value* val);
+		llvm::Value* BoolToInt(llvm::Value* val);
+
+		llvm::Value* IntToDouble(llvm::Value* val);
+		llvm::Value* DoubleToInt(llvm::Value* val);
+
 	private:
 		llvm::LLVMContext m_Context;
 		llvm::IRBuilder<> m_Builder;

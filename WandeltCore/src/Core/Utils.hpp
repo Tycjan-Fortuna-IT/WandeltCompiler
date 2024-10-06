@@ -9,7 +9,6 @@
 #pragma once
 
 #define valueOrReturnNullptr(type, variable, value) \
-	SYSTEM_WARN("Returning null: {}", #value);      \
 	type variable = value;                          \
 	if (!variable)                                  \
 		return nullptr;

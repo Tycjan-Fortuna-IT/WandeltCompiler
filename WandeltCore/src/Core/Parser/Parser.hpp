@@ -34,7 +34,9 @@ namespace WandeltCore
 		bool IsExpressionOperator(TokenType type) const
 		{
 			return type == TokenType::PLUS || type == TokenType::MINUS || type == TokenType::STAR ||
-			       type == TokenType::SLASH || type == TokenType::DOUBLE_STAR || type == TokenType::PERCENT;
+			       type == TokenType::SLASH || type == TokenType::DOUBLE_STAR || type == TokenType::PERCENT ||
+			       type == TokenType::EQUAL_EQUAL || type == TokenType::BANG_EQUAL || type == TokenType::LESS ||
+			       type == TokenType::LESS_EQUAL || type == TokenType::GREATER || type == TokenType::GREATER_EQUAL;
 		}
 
 		// Check if we are at the end of the source file

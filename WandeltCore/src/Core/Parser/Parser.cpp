@@ -19,7 +19,7 @@ namespace WandeltCore
 		{
 			const TokenType type = GetCurrentToken().Type;
 
-			SYSTEM_WARN("Parsing token: {}", TokenTypeToString(type));
+			// SYSTEM_WARN("Parsing token: {}", TokenTypeToString(type));
 
 			if (type == TokenType::IF_KEYWORD)
 			{
@@ -90,14 +90,21 @@ namespace WandeltCore
 		{
 		case TokenType::DOUBLE_STAR:
 		case TokenType::PERCENT:
-			return 3;
+			return 6;
 		case TokenType::STAR:
 		case TokenType::SLASH:
-			return 2;
-
+			return 5;
 		case TokenType::PLUS:
 		case TokenType::MINUS:
-			return 1;
+			return 4;
+		case TokenType::LESS:
+		case TokenType::LESS_EQUAL:
+		case TokenType::GREATER:
+		case TokenType::GREATER_EQUAL:
+			return 3;
+		case TokenType::EQUAL_EQUAL:
+		case TokenType::BANG_EQUAL:
+			return 2;
 		default:
 			return -1;
 		}

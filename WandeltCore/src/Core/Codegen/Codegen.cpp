@@ -21,9 +21,14 @@ namespace WandeltCore
 	{
 		GenerateEntrypoint();
 
-		Statement* mainReturn = statements.at(0);
+		Statement* mainReturn = statements.back();
 
-		GenerateReturnStatement((ReturnStatement*)mainReturn);
+		ReturnStatement* ret = dynamic_cast<ReturnStatement*>(mainReturn);
+
+		if (!ret)
+			ret = new ReturnStatement(SourceLocation{}, new NumberLiteral(SourceLocation{}, 0));
+
+		GenerateReturnStatement(ret);
 
 		std::error_code ec;
 		llvm::raw_fd_ostream file("output.ll", ec, llvm::sys::fs::OF_Text);
@@ -88,6 +93,22 @@ namespace WandeltCore
 			return m_Builder.CreateSDiv(lhs, rhs);
 		else if (op == TokenType::PERCENT)
 			return m_Builder.CreateSRem(lhs, rhs);
+
+		lhs = IntToDouble(lhs);
+		rhs = IntToDouble(rhs);
+
+		if (op == TokenType::EQUAL_EQUAL)
+			return BoolToInt(m_Builder.CreateFCmpOEQ(lhs, rhs));
+		else if (op == TokenType::BANG_EQUAL)
+			return BoolToInt(m_Builder.CreateFCmpONE(lhs, rhs));
+		else if (op == TokenType::LESS)
+			return BoolToInt(m_Builder.CreateFCmpOLT(lhs, rhs));
+		else if (op == TokenType::LESS_EQUAL)
+			return BoolToInt(m_Builder.CreateFCmpOLE(lhs, rhs));
+		else if (op == TokenType::GREATER)
+			return BoolToInt(m_Builder.CreateFCmpOGT(lhs, rhs));
+		else if (op == TokenType::GREATER_EQUAL)
+			return BoolToInt(m_Builder.CreateFCmpOGE(lhs, rhs));
 
 		llvm_unreachable("unexpected binary operator");
 
@@ -210,5 +231,47 @@ namespace WandeltCore
 		m_Builder.CreateRet(returnValue);
 
 		return nullptr;
+	}
+
+	llvm::Value* Codegen::DoubleToBool(llvm::Value* val)
+	{
+		ASSERT(val->getType()->isDoubleTy());
+
+		return m_Builder.CreateFCmpONE(val, llvm::ConstantFP::get(m_Builder.getDoubleTy(), 0.0), "double.to.bool");
+	}
+
+	llvm::Value* Codegen::BoolToDouble(llvm::Value* val)
+	{
+		ASSERT(val->getType()->isIntegerTy(1));
+
+		return m_Builder.CreateUIToFP(val, m_Builder.getDoubleTy(), "bool.to.double");
+	}
+
+	llvm::Value* Codegen::IntToBool(llvm::Value* val)
+	{
+		ASSERT(val->getType()->isIntegerTy());
+
+		return m_Builder.CreateICmpNE(val, llvm::ConstantInt::get(val->getType(), 0), "int.to.bool");
+	}
+
+	llvm::Value* Codegen::BoolToInt(llvm::Value* val)
+	{
+		ASSERT(val->getType()->isIntegerTy(1));
+
+		return m_Builder.CreateZExt(val, m_Builder.getInt32Ty(), "bool.to.int");
+	}
+
+	llvm::Value* Codegen::IntToDouble(llvm::Value* val)
+	{
+		ASSERT(val->getType()->isIntegerTy());
+
+		return m_Builder.CreateSIToFP(val, m_Builder.getDoubleTy(), "int.to.double");
+	}
+
+	llvm::Value* Codegen::DoubleToInt(llvm::Value* val)
+	{
+		ASSERT(val->getType()->isDoubleTy());
+
+		return m_Builder.CreateFPToSI(val, m_Builder.getInt32Ty(), "double.to.int");
 	}
 } // namespace WandeltCore

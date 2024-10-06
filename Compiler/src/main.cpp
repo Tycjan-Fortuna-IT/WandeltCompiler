@@ -15,8 +15,8 @@ int main(int argc, char* argv[])
 	CompilerArguments args;
 	args.InputFile  = *(argv + 1);
 	args.OutputFile = *(argv + 2);
-	args.Flags =
-	    hasFlags ? (strcmp(*(argv + 3), "--v") ? CompilerFlags::Verbose : CompilerFlags::None) : CompilerFlags::None;
+	args.Flags      = hasFlags ? (strcmp(*(argv + 3), "--v") == 0 ? CompilerFlags::Verbose : CompilerFlags::None)
+	                           : CompilerFlags::None;
 
 	Compiler compiler(args);
 
