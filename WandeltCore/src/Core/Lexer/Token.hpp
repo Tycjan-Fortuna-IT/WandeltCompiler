@@ -45,10 +45,13 @@ namespace WandeltCore
 		GREATER_EQUAL, // >=
 
 		// Punctuation
+		COMMA,     // ,
+		DOT,       // .
 		SEMICOLON, // ;
 
 		// Other
-		IDENTIFIER,
+		VARIABLE_IDENTIFIER, // $identifier
+		FUNCTION_IDENTIFIER, // identifier
 		END_OF_FILE,
 	};
 

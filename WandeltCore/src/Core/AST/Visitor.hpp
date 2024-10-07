@@ -23,6 +23,8 @@ namespace WandeltCore
 		virtual llvm::Value* GenerateUnaryExpression(class UnaryExpression* unaryExpression)          = 0;
 		virtual llvm::Value* GeneratePowerExpression(class PowerExpression* powerExpression)          = 0;
 		virtual llvm::Value* GenerateGroupingExpression(class GroupingExpression* groupingExpression) = 0;
+		virtual llvm::Value* GenerateCallExpression(class CallExpression* callExpression)             = 0;
+		virtual llvm::Value* GenerateDeclaration(class Declaration* declaration)                      = 0;
 		virtual llvm::Value* GenerateIfStatement(class IfStatement* ifStatement)                      = 0;
 		virtual llvm::Value* GenerateReturnStatement(class ReturnStatement* returnStatement)          = 0;
 	};

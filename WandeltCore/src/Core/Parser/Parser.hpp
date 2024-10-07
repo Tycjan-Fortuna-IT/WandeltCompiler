@@ -57,6 +57,8 @@ namespace WandeltCore
 		Expression* ParseExpression();
 		Expression* ParseExpressionRHS(Expression*& lhs, i32 precedence);
 
+		std::vector<Expression*> ParseArguments();
+
 		Scope* ParseScope();
 
 		Statement* ParseStatement();

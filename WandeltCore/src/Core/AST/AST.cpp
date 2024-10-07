@@ -103,4 +103,21 @@ namespace WandeltCore
 		else
 			SYSTEM_DEBUG(getIndent(indentation + 1) + "nullptr");
 	}
+
+	void Declaration::Dump(u32 indentation) const
+	{
+		SYSTEM_DEBUG(getIndent(indentation) + "Declaration: ");
+		SYSTEM_DEBUG(getIndent(indentation + 1) + "Identifier: {}", m_Identifier);
+	}
+
+	void CallExpression::Dump(u32 indentation) const
+	{
+		SYSTEM_DEBUG(getIndent(indentation) + "CallExpression: ");
+
+		m_Declaration->Dump(indentation + 1);
+
+		SYSTEM_DEBUG(getIndent(indentation) + "Args: ");
+
+		for (const Expression* expression : m_Args) expression->Dump(indentation + 2);
+	}
 } // namespace WandeltCore

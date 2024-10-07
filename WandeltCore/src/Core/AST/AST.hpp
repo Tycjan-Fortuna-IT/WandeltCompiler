@@ -228,4 +228,39 @@ namespace WandeltCore
 	private:
 		Expression* m_Expression = nullptr;
 	};
+
+	class Declaration : public Statement
+	{
+	public:
+		Declaration(SourceLocation location, std::string identifer) : Statement(location), m_Identifier(identifer) {}
+
+		const std::string& GetIdentifier() { return m_Identifier; }
+
+		llvm::Value* Generate(Visitor* visitor) override { return visitor->GenerateDeclaration(this); }
+
+		void Dump(u32 indentation = 0) const override;
+
+	private:
+		std::string m_Identifier;
+	};
+
+	class CallExpression : public Expression
+	{
+	public:
+		CallExpression(SourceLocation location, Declaration* declaration, const std::vector<Expression*>& args)
+		    : Expression(location), m_Declaration(declaration), m_Args(args)
+		{
+		}
+
+		Declaration* GetDeclaration() const { return m_Declaration; }
+		const std::vector<Expression*>& GetArgs() const { return m_Args; }
+
+		llvm::Value* Generate(Visitor* visitor) override { return visitor->GenerateCallExpression(this); }
+
+		void Dump(u32 indentation = 0) const override;
+
+	private:
+		Declaration* m_Declaration = nullptr;
+		std::vector<Expression*> m_Args;
+	};
 } // namespace WandeltCore

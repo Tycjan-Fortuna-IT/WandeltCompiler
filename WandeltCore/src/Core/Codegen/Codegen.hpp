@@ -46,6 +46,9 @@ namespace WandeltCore
 	private:
 		void GenerateEntrypoint();
 
+		void GenerateBuiltins();
+		void GenerateBuiltinPrintlnFunction();
+
 		llvm::Value* GenerateStatement(Statement* statement);
 
 		llvm::Value* GenerateNumberLiteral(NumberLiteral* numberLiteral) override;
@@ -53,6 +56,9 @@ namespace WandeltCore
 		llvm::Value* GenerateUnaryExpression(UnaryExpression* unaryExpression) override;
 		llvm::Value* GeneratePowerExpression(PowerExpression* powerExpression) override;
 		llvm::Value* GenerateGroupingExpression(GroupingExpression* groupingExpression) override;
+
+		llvm::Value* GenerateDeclaration(class Declaration* declaration) override;
+		llvm::Value* GenerateCallExpression(class CallExpression* callExpression) override;
 
 		llvm::Value* GenerateIfStatement(IfStatement* ifStatement) override;
 		llvm::Value* GenerateReturnStatement(ReturnStatement* returnStatement) override;

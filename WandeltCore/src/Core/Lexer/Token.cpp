@@ -50,10 +50,16 @@ namespace WandeltCore
 			return "GREATER";
 		case TokenType::GREATER_EQUAL:
 			return "GREATER_EQUAL";
+		case TokenType::COMMA:
+			return "COMMA";
+		case TokenType::DOT:
+			return "DOT";
 		case TokenType::SEMICOLON:
 			return "SEMICOLON";
-		case TokenType::IDENTIFIER:
-			return "IDENTIFIER";
+		case TokenType::FUNCTION_IDENTIFIER:
+			return "FUNCTION_IDENTIFIER";
+		case TokenType::VARIABLE_IDENTIFIER:
+			return "VARIABLE_IDENTIFIER";
 		case TokenType::END_OF_FILE:
 			return "END_OF_FILE";
 		default:
@@ -108,6 +114,10 @@ namespace WandeltCore
 			return ">";
 		case TokenType::GREATER_EQUAL:
 			return ">=";
+		case TokenType::COMMA:
+			return ",";
+		case TokenType::DOT:
+			return ".";
 		case TokenType::SEMICOLON:
 			return ";";
 		case TokenType::END_OF_FILE:

@@ -77,6 +77,10 @@ namespace WandeltCore
 		case '\n':
 			// Ignore whitespace.
 			break;
+		case ',':
+			TOKEN_CASE(TokenType::COMMA);
+		case '.':
+			TOKEN_CASE(TokenType::DOT);
 		case ';':
 			TOKEN_CASE(TokenType::SEMICOLON);
 		case '(':
@@ -198,15 +202,18 @@ namespace WandeltCore
 				}
 				else
 				{
-					if (c != '$')
-					{
-						SYSTEM_ERROR(
-						    "Variable names must start with a $ character. Missing $ before: {} at line: {} column: {}",
-						    lexeme, tokenStartLocation.Line, tokenStartLocation.Column);
-						break;
-					}
+					// if (c != '$')
+					// {
+					// 	SYSTEM_ERROR(
+					// 	    "Variable names must start with a $ character. Missing $ before: {} at line: {} column: {}",
+					// 	    lexeme, tokenStartLocation.Line, tokenStartLocation.Column);
+					// 	break;
+					// }
 
-					AddToken(tokenStartLocation, TokenType::IDENTIFIER, lexeme);
+					if (c == '$')
+						AddToken(tokenStartLocation, TokenType::VARIABLE_IDENTIFIER, lexeme);
+					else
+						AddToken(tokenStartLocation, TokenType::FUNCTION_IDENTIFIER, lexeme);
 				}
 
 				break;

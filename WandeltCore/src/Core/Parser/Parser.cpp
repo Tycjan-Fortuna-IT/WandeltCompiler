@@ -63,7 +63,7 @@ namespace WandeltCore
 
 	void Parser::SynchronizeAfterError()
 	{
-		// SYSTEM_ERROR("Synchronizing parser after error.");
+		SYSTEM_ERROR("Synchronizing parser after error.");
 		m_IsValid = false;
 
 		while (!IsAtEnd())
@@ -139,6 +139,22 @@ namespace WandeltCore
 			return new NumberLiteral(token.Location, std::stoi(token.Lexeme.value()));
 		}
 
+		if (token.Type == TokenType::FUNCTION_IDENTIFIER)
+		{
+			if (GetNextToken().Type != TokenType::LEFT_PARENTHESES)
+			{
+				SYSTEM_ERROR("Expected '(' after function identifier at line: {} column: {}.", token.Location.Line,
+				             token.Location.Column);
+
+				return nullptr;
+			}
+
+			EatCurrentToken(); // eat the function identifier
+
+			return new CallExpression(token.Location, new Declaration(GetCurrentToken().Location, token.Lexeme.value()),
+			                          ParseArguments());
+		}
+
 		SYSTEM_ERROR("Expected expression at line: {} column: {}. Received: {}.", token.Location.Line,
 		             token.Location.Column, TokenTypeToString(token.Type));
 
@@ -196,6 +212,56 @@ namespace WandeltCore
 		return lhs;
 	}
 
+	// does eat ( and )
+	std::vector<Expression*> Parser::ParseArguments()
+	{
+		std::vector<Expression*> args;
+
+		EatCurrentToken(); // eat the left parentheses
+
+		while (true)
+		{
+			const Token& token = GetCurrentToken();
+
+			if (token.Type == TokenType::RIGHT_PARENTHESES)
+				break;
+
+			if (token.Type == TokenType::END_OF_FILE)
+			{
+				SYSTEM_ERROR("Expected ')' at line: {} column: {}.", token.Location.Line, token.Location.Column);
+				return args;
+			}
+
+			Expression* expr = ParseExpression();
+			if (!expr)
+			{
+				SynchronizeAfterError();
+				continue;
+			}
+
+			if (GetCurrentToken().Type == TokenType::COMMA)
+				EatCurrentToken(); // eat the comma if multiple arguments
+
+			args.push_back(expr);
+		}
+
+		EatCurrentToken(); // eat the right parentheses
+
+		const Token& token = GetCurrentToken();
+
+		if (token.Type != TokenType::SEMICOLON)
+		{
+			SYSTEM_ERROR("Expected ';' after the function call at line: {} column: {}.", token.Location.Line,
+			             token.Location.Column);
+
+			return args;
+		}
+
+		EatCurrentToken(); // eat the semicolon
+
+		return args;
+	}
+
 	Scope* Parser::ParseScope()
 	{
 		const Token& token = GetAndEatCurrentToken(); // eat the left brace
@@ -244,11 +310,15 @@ namespace WandeltCore
 			return ParseReturnStatement();
 		}
 
-		SYSTEM_ERROR("Unexpected token: {} at line: {} column: {}",
-		             token.Lexeme.has_value() ? token.Lexeme.value() : TokenTypeToStringRepresentation(token.Type),
-		             token.Location.Line, token.Location.Column);
+		Statement* statement = ParseExpression();
+		if (!statement)
+		{
+			SYSTEM_ERROR("[ParseStatement] Unexpected token: {} at line: {} column: {}",
+			             token.Lexeme.has_value() ? token.Lexeme.value() : TokenTypeToStringRepresentation(token.Type),
+			             token.Location.Line, token.Location.Column);
+		}
 
-		return nullptr;
+		return statement;
 	}
 
 	Statement* Parser::ParseIfStatement()

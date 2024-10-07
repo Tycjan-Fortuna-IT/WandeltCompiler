@@ -43,6 +43,8 @@ namespace WandeltCore
 
 	void Codegen::GenerateEntrypoint()
 	{
+		GenerateBuiltins();
+
 		llvm::Type* int32Type = llvm::Type::getInt32Ty(m_Context);
 
 		llvm::FunctionType* functionType = llvm::FunctionType::get(int32Type, false);
@@ -54,6 +56,18 @@ namespace WandeltCore
 		llvm::BasicBlock* entryBlock = llvm::BasicBlock::Create(m_Context, "entry", mainFunction);
 
 		m_Builder.SetInsertPoint(entryBlock);
+	}
+
+	void Codegen::GenerateBuiltins()
+	{
+		GenerateBuiltinPrintlnFunction();
+	}
+
+	void Codegen::GenerateBuiltinPrintlnFunction()
+	{
+		llvm::FunctionType* type = llvm::FunctionType::get(m_Builder.getInt32Ty(), {m_Builder.getPtrTy()}, true);
+
+		llvm::Function* printf = llvm::Function::Create(type, llvm::Function::ExternalLinkage, "printf", m_Module);
 	}
 
 	llvm::Value* Codegen::GenerateStatement(Statement* statement)
@@ -207,6 +221,25 @@ namespace WandeltCore
 	llvm::Value* Codegen::GenerateGroupingExpression(GroupingExpression* groupingExpression)
 	{
 		return GenerateStatement(groupingExpression->GetExpression());
+	}
+
+	llvm::Value* Codegen::GenerateCallExpression(CallExpression* callExpression)
+	{
+		// llvm::Function* function = m_Module.getFunction(callExpression->GetDeclaration()->GetIdentifier());
+		llvm::Function* function = m_Module.getFunction("printf");
+
+		// for now only println(12) is supported
+
+		llvm::Value* arg = GenerateStatement(callExpression->GetArgs().front());
+
+		std::vector<llvm::Value*> args = {m_Builder.CreateGlobalStringPtr("%d\n"), arg};
+
+		return m_Builder.CreateCall(function, args);
+	}
+
+	llvm::Value* Codegen::GenerateDeclaration(Declaration* declaration)
+	{
+		return nullptr;
 	}
 
 	llvm::Value* Codegen::GenerateIfStatement(IfStatement* ifStatement)
