@@ -5,11 +5,13 @@
 #define TOKEN_CASE(x)                \
 	AddToken(tokenStartLocation, x); \
 	break;
+
 namespace WandeltCore
 {
 	Lexer::Lexer(const std::filesystem::path& filepath) : m_Filename(filepath.filename().string())
 	{
-		ASSERT(FileSystem::Exists(filepath), "Input file does not exist.");
+		ASSERT(FileSystem::Exists(filepath), "Input file `{}` does not exist",
+		       std::filesystem::absolute(filepath).string());
 
 		SYSTEM_INFO("Input file: {}", filepath.filename());
 

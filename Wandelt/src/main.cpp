@@ -3,10 +3,7 @@
 #include <filesystem>
 #include <string>
 
-#include <Logger/Logger.hpp>
 #include <Wandelt.hpp>
-
-#include <Core/Compiler.hpp>
 
 using namespace WandeltCore;
 

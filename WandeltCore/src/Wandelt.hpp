@@ -11,4 +11,5 @@
 #include <Core/Defines.hpp>
 #include <Core/Utils.hpp>
 
+#include <Core/Compiler.hpp>
 #include <Logger/Logger.hpp>
