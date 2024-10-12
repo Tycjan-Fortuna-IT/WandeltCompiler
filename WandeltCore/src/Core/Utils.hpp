@@ -22,8 +22,8 @@ namespace WandeltCore
 		u32 Column;
 	};
 
-	[[nodiscard]] static std::string getIndent(u32 level)
+	[[nodiscard]] static std::string getIndent(u32 level, u32 multiplier = 2)
 	{
-		return std::string(level * 2, ' ');
+		return std::string(level * multiplier, ' ');
 	}
 } // namespace WandeltCore

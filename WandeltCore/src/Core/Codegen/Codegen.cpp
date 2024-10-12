@@ -77,8 +77,6 @@ namespace WandeltCore
 		if (result)
 			return result;
 
-		llvm_unreachable("unexpected expression");
-
 		return nullptr;
 	}
 

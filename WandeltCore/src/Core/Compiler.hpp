@@ -30,7 +30,7 @@ namespace WandeltCore
 	{
 	public:
 		Compiler(const CompilerArguments& args);
-		~Compiler();
+		~Compiler() = default;
 
 		void Compile();
 

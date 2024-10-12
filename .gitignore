@@ -1,3 +1,13 @@
 .vscode
 build
 vendor
+config.txt
+docs.txt
+todo.txt
+.vs
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+/bin
+/bin-int

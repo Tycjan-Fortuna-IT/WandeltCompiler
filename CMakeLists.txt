@@ -8,6 +8,8 @@ set(CMAKE_C_FLAGS -fcolor-diagnostics)
 set(CMAKE_CXX_FLAGS -fansi-escape-codes)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
 
+set(CMAKE_SUPPRESS_REGENERATION true) # Suppresses ZERO_CHECK project in Visual Studio
+
 if(WIN32)
     add_compile_definitions(SW_PLATFORM_WINDOWS)
 elseif(UNIX)
@@ -18,7 +20,7 @@ project(Wandelt VERSION 0.0.1 LANGUAGES CXX)
 
 add_subdirectory(WandeltCore WandeltCore)
 
-add_executable(${PROJECT_NAME} Compiler/src/main.cpp)
+add_executable(${PROJECT_NAME} Runtime/src/main.cpp)
 
 # Add the Wandelt Core library
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/WandeltCore/src)

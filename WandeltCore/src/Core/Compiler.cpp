@@ -9,20 +9,6 @@ namespace WandeltCore
 {
 	Compiler::Compiler(const CompilerArguments& args) : m_Args(args)
 	{
-		const SW::LogSystemSpecification spec = {
-		    .LogFileName              = "logs/wandelt.log",
-		    .ConsoleSinkLoggerPattern = "%^[%T] [%n] [%l]: %v%$",
-		    .FileSinkLoggerPattern    = "[%T] [%l] [%n] [%l]: %v",
-		    .SystemLoggerName         = "COMPILER",
-		    .AppLoggerName            = "APP",
-		};
-
-		SW::LogSystem::Initialize(spec);
-	}
-
-	Compiler::~Compiler()
-	{
-		SW::LogSystem::Shutdown();
 	}
 
 	void Compiler::Compile()
