@@ -19,8 +19,6 @@ namespace WandeltCore
 		{
 			const TokenType type = GetCurrentToken().Type;
 
-			// SYSTEM_WARN("Parsing token: {}", TokenTypeToString(type));
-
 			if (type == TokenType::IF_KEYWORD)
 			{
 				// Parse if statement
@@ -53,11 +51,9 @@ namespace WandeltCore
 			if (token.Type == TokenType::END_OF_FILE)
 				break;
 
-			SYSTEM_ERROR("[Parser] Unexpected token: {} at line: {} column: {}",
-			             token.Lexeme.has_value() ? token.Lexeme.value() : TokenTypeToStringRepresentation(token.Type),
-			             token.Location.Line, token.Location.Column);
+			Error::ReportError(ParserErrorCode::UNEXPECTED_TOKEN, token);
 
-			m_IsValid = false;
+			SynchronizeAfterError();
 		}
 	}
 
@@ -68,18 +64,16 @@ namespace WandeltCore
 
 		while (!IsAtEnd())
 		{
-			if (GetNextToken().Type == TokenType::SEMICOLON)
-				return;
-
-			const Token& token = GetCurrentToken();
-
-			switch (token.Type)
+			switch (GetCurrentToken().Type)
 			{
-			case TokenType::RETURN_KEYWORD:
+			case TokenType::IF_KEYWORD:
+			case TokenType::ELSE_KEYWORD:
+				// case TokenType::RETURN_KEYWORD:
+				if (!IsAtEnd())
+					EatCurrentToken();
 				return;
 			default:
 				EatCurrentToken();
-				break;
 			}
 		}
 	}
@@ -120,11 +114,9 @@ namespace WandeltCore
 
 			Expression* expr = ParseExpression();
 
-			if (GetCurrentToken().Type != TokenType::RIGHT_PARENTHESES)
+			if (GetCurrentToken().Type != TokenType::RIGHT_PARENTHESES) // missing right parentheses
 			{
-				SYSTEM_ERROR("Expected ')' at line: {} column: {}.", token.Location.Line, token.Location.Column);
-
-				return nullptr;
+				return Error::ReportError(ParserErrorCode::MISSING_RIGHT_PARENTHESIS, GetPreviousToken());
 			}
 
 			EatCurrentToken(); // eat the right parentheses
@@ -143,10 +135,7 @@ namespace WandeltCore
 		{
 			if (GetNextToken().Type != TokenType::LEFT_PARENTHESES)
 			{
-				SYSTEM_ERROR("Expected '(' after function identifier at line: {} column: {}.", token.Location.Line,
-				             token.Location.Column);
-
-				return nullptr;
+				return Error::ReportError(ParserErrorCode::MISSING_LEFT_PARENTHESIS, token);
 			}
 
 			EatCurrentToken(); // eat the function identifier
@@ -155,10 +144,12 @@ namespace WandeltCore
 			                          ParseArguments());
 		}
 
-		SYSTEM_ERROR("Expected expression at line: {} column: {}. Received: {}.", token.Location.Line,
-		             token.Location.Column, TokenTypeToString(token.Type));
+		if (GetPreviousToken().Type == TokenType::RETURN_KEYWORD)
+		{
+			return Error::ReportError(ParserErrorCode::MISSING_SEMICOLON, GetPreviousToken());
+		}
 
-		return nullptr;
+		return Error::ReportError(ParserErrorCode::MISSING_EXPRESSION, token);
 	}
 
 	Expression* Parser::ParsePrefixExpression()
@@ -228,7 +219,8 @@ namespace WandeltCore
 
 			if (token.Type == TokenType::END_OF_FILE)
 			{
-				SYSTEM_ERROR("Expected ')' at line: {} column: {}.", token.Location.Line, token.Location.Column);
+				Error::ReportError(ParserErrorCode::MISSING_RIGHT_PARENTHESIS, GetPreviousToken());
+
 				return args;
 			}
 
@@ -251,8 +243,7 @@ namespace WandeltCore
 
 		if (token.Type != TokenType::SEMICOLON)
 		{
-			SYSTEM_ERROR("Expected ';' after the function call at line: {} column: {}.", token.Location.Line,
-			             token.Location.Column);
+			Error::ReportError(ParserErrorCode::MISSING_SEMICOLON, GetPreviousToken());
 
 			return args;
 		}
@@ -277,16 +268,13 @@ namespace WandeltCore
 
 			if (currentToken.Type == TokenType::END_OF_FILE)
 			{
-				SYSTEM_ERROR("Expected '}' at line: {} column: {}.", currentToken.Location.Line,
-				             currentToken.Location.Column);
-				return nullptr;
+				return Error::ReportError(ParserErrorCode::MISSING_SCOPE_CLOSING, token);
 			}
 
 			Statement* statement = ParseStatement();
 			if (!statement)
 			{
-				SynchronizeAfterError();
-				continue;
+				return nullptr;
 			}
 
 			statements.push_back(statement);
@@ -313,9 +301,7 @@ namespace WandeltCore
 		Statement* statement = ParseExpression();
 		if (!statement)
 		{
-			SYSTEM_ERROR("[ParseStatement] Unexpected token: {} at line: {} column: {}",
-			             token.Lexeme.has_value() ? token.Lexeme.value() : TokenTypeToStringRepresentation(token.Type),
-			             token.Location.Line, token.Location.Column);
+			return Error::ReportError(ParserErrorCode::UNEXPECTED_TOKEN, token);
 		}
 
 		return statement;
@@ -362,28 +348,28 @@ namespace WandeltCore
 		EatCurrentToken(); // eat the return keyword
 		const Token& token = GetCurrentToken();
 
+		if (token.Type == TokenType::END_OF_FILE)
+		{
+			return Error::ReportError(ParserErrorCode::MISSING_SEMICOLON, GetPreviousToken());
+		}
+
 		if (token.Type != TokenType::SEMICOLON)
 		{
 			valueOrReturnNullptr(Expression*, expr, ParseExpression());
 
-			const Token& afterToken = GetCurrentToken(); // should be a semicolon
-
-			if (afterToken.Type != TokenType::SEMICOLON)
+			if (GetCurrentToken().Type != TokenType::SEMICOLON)
 			{
-				SYSTEM_ERROR("Expected ';' after the return keyword. At line: {} column: {}.", afterToken.Location.Line,
-				             afterToken.Location.Column);
-
-				return nullptr;
+				return Error::ReportError(ParserErrorCode::MISSING_SEMICOLON, GetPreviousToken());
 			}
 
-			EatCurrentToken();
+			EatCurrentToken(); // eat the semicolon
 
 			return new ReturnStatement(token.Location, expr);
 		}
 
-		SYSTEM_ERROR("Expected ';' after the return keyword. At line: {} column: {}.", token.Location.Line,
-		             token.Location.Column);
+		EatCurrentToken();
 
-		return nullptr;
+		// TODO consider returning void
+		return new ReturnStatement(token.Location, new NumberLiteral(token.Location, 0));
 	}
 } // namespace WandeltCore

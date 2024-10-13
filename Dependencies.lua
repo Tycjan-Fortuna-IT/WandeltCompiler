@@ -11,27 +11,28 @@ end
 	and included is define it properly in the table below, here's some example usage:
 
 	MyDepName = {
-		LibName = "my_dep_name",
-		LibDir = "some_path_to_dependency_lib_dir",
-		IncludeDir = "my_include_dir",
-		Windows = { DebugLibName = "my_dep_name_debug" },
+		LibsToLink = "my_dep_name",
+		LibDirs = "some_path_to_dependency_lib_dir",
+		IncludeDirs = "my_include_dir",
+		Windows = { DebugLibsToLink = "my_dep_name_debug" },
 		Configurations = "Debug,Release"
 		Defines = { "MY_DEFINE" }
 	}
 
 	MyDepName - This is just for organizational purposes, it doesn't actually matter for the build process
-	LibName - This is the name of the .lib file that you want to link against (you shouldn't include the .lib extension since Linux uses .a)
-	LibDir - Indicates which directory the lib file is located in, this can include "%{cfg.buildcfg}" if you have a dedicated Debug / Release directory
-	IncludeDir - Pretty self explanatory, the filepath that will be included in externalincludedirs
+	LibsToLink - This is the name of the .lib file that you want to link against (you shouldn't include the .lib extension since Linux uses .a)
+	LibDirs - Indicates which directory the lib file is located in, this can include "%{cfg.buildcfg}" if you have a dedicated Debug / Release directory
+	IncludeDirs - Pretty self explanatory, the filepath that will be included in externalincludedirs
 	Windows - This defines a platform-specific scope for this dependency, anything defined in that scope will only apply for Windows, you can also add one for Linux
-	DebugLibName - Use this if the .lib file has a different name in Debug builds (e.g "shaderc_sharedd" vs "shaderc_shared")
+	DebugLibsToLink - Use this if the .lib file has a different name in Debug builds (e.g "shaderc_sharedd" vs "shaderc_shared")
 	Configurations - Defines a list of configurations that this dependency should be used in, if no Configurations is specified all configs will link and include this dependency (which is what we want in most cases)
 	Defines - Defines a list of preprocessor definitions that should be added to the project when this dependency is included
 		
 ]]--
 
 Dependencies = {
-    DEFINES = {
+    {
+		Name = "Global defines",
         Windows = {
             Defines = {
                 "_CRT_SECURE_NO_DEPRECATE",
@@ -45,47 +46,49 @@ Dependencies = {
                 "__STDC_CONSTANT_MACROS",
                 "__STDC_FORMAT_MACROS",
                 "__STDC_LIMIT_MACROS",
-        		"SPDLOG_USE_STD_FORMAT",
             }
         }
     },
-    LLVM = {
+    {
+		Name = "LLVM",
         Windows = {
-            LibName = llvmLibsTable,
-            IncludeDir = llvmDir .. "/include",
-            LibDir = llvmDir .. "/lib",
+            LibsToLink = llvmLibsTable,
+            IncludeDirs = { llvmDir .. "/include" },
+            LibDirs = { llvmDir .. "/lib" },
         },
     },
-    LLVM_HELPER = {
+    {
+		Name = "ntdll",
         Windows = {
-            LibName = "ntdll.lib",
+            LibsToLink = { "ntdll.lib" },
         }
     },
-	LOGGER_MODULE = {
-		LibName = "Logger",
-		IncludeDir = "%{wks.location}/WandeltCore/modules/Logger/src",
+	{
+		Name = "SW Logger Module",
+		LibsToLink = { "Logger" },
+		IncludeDirs = { "%{wks.location}/WandeltCore/modules/Logger/src" },
 	},
 }
 
 function LinkDependency(table, is_debug, target)
 
 	-- Setup library directory
-	if table.LibDir ~= nil then
-		libdirs { table.LibDir }
+	if table.LibDirs ~= nil then
+		libdirs { table.LibDirs }
 	end
 
 	-- Try linking
-	local libraryName = nil
-	if table.LibName ~= nil then
-		libraryName = table.LibName
+	local libsToLink = nil
+	if table.LibsToLink ~= nil then
+		libsToLink = table.LibsToLink
 	end
 
-	if table.DebugLibName ~= nil and is_debug and target == "Windows" then
-		libraryName = table.DebugLibName
+	if table.DebugLibsToLink ~= nil and is_debug and target == "Windows" then
+		libsToLink = table.DebugLibsToLink
 	end
 
-	if libraryName ~= nil then
-		links { libraryName }
+	if libsToLink ~= nil then
+		links { libsToLink }
 		return true
 	end
 
@@ -93,8 +96,8 @@ function LinkDependency(table, is_debug, target)
 end
 
 function AddDependencyIncludes(table)
-	if table.IncludeDir ~= nil then
-		externalincludedirs { table.IncludeDir }
+	if table.IncludeDirs ~= nil then
+		externalincludedirs { table.IncludeDirs }
 	end
 end
 

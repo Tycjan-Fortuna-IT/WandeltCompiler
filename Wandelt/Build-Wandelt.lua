@@ -5,6 +5,7 @@ project "Wandelt"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
+    debugdir ("%{wks.location}/bin/" .. outputdir .. "/Wandelt")
 
     files {
         "src/**.hpp",
@@ -18,9 +19,8 @@ project "Wandelt"
         "../WandeltCore/vendor",
     }
 
-    links {
-        "WandeltCore"
-    }
+    dependson { "WandeltCore" }
+    links { "WandeltCore" }
 
     filter "configurations:Debug"
         IncludeDependencies("Debug")

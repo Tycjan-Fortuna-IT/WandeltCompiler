@@ -66,6 +66,9 @@ namespace WandeltCore
 		TokenType Type;
 		std::optional<std::string> Lexeme = std::nullopt;
 		SourceLocation Location;
+
+		// Check if the token has a lexeme.
+		bool HasLexeme() const { return Lexeme.has_value(); }
 	};
 
 	static const std::unordered_map<std::string_view, TokenType> Keywords = {{"let", TokenType::LET_KEYWORD},

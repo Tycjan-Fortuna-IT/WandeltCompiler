@@ -42,7 +42,7 @@ namespace WandeltCore
 		if (m_Source[m_Current] != expected)
 			return false;
 
-		m_Current++;
+		Advance();
 
 		return true;
 	}
@@ -69,7 +69,24 @@ namespace WandeltCore
 	{
 		char c = Advance();
 
-		const SourceLocation tokenStartLocation = {m_Filename, m_Line, m_Column};
+		// Find the start of the line
+		int lineStart = m_Source.rfind('\n', m_Current - 1);
+		if (lineStart == std::string::npos)
+			lineStart = 0; // If no previous newline, start from the beginning
+		else
+			lineStart += 1; // Move to the character after the newline
+
+		// Find the end of the line
+		int lineEnd = m_Source.find('\n', m_Current);
+		if (lineEnd == std::string::npos)
+		{
+			lineEnd = m_Source.length(); // If no next newline, go to the end of the source
+		}
+
+		// Extract the entire line
+		std::string_view fullLine(m_Source.data() + lineStart, lineEnd - lineStart);
+
+		const SourceLocation tokenStartLocation = {fullLine, m_Line, m_Column};
 
 		switch (c)
 		{
@@ -118,6 +135,7 @@ namespace WandeltCore
 				             tokenStartLocation.Column);
 
 				m_IsValid = false;
+				break;
 			}
 		}
 		case '<': {
@@ -150,7 +168,7 @@ namespace WandeltCore
 				TOKEN_CASE(TokenType::STAR);
 			}
 		}
-			TOKEN_CASE(TokenType::STAR);
+			// TOKEN_CASE(TokenType::STAR);
 		case '/': {
 			if (IsMatchingNext('/'))
 				// A comment goes until the end of the line.
@@ -187,7 +205,9 @@ namespace WandeltCore
 			{
 				while (IsDigit(LookAhead())) Advance();
 
-				AddToken(tokenStartLocation, TokenType::NUMBER, m_Source.substr(m_Start, m_Current - m_Start));
+				std::string lexeme = m_Source.substr(m_Start, m_Current - m_Start);
+
+				AddToken(tokenStartLocation, TokenType::NUMBER, lexeme);
 
 				break;
 			}

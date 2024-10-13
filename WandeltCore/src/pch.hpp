@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <Core/Defines.hpp>
+#include <Core/Error.hpp>
 #include <Core/Utils.hpp>
 
 #include <Logger/Logger.hpp>
