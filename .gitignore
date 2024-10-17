@@ -1,11 +1,11 @@
 .vscode
 build
-vendor
 config.txt
 docs.txt
 todo.txt
 .vs
 *.sln
+*.log
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user

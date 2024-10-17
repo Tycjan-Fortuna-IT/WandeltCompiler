@@ -21,13 +21,13 @@ project "WandeltCore"
     }
 
     filter "configurations:Debug"
-        IncludeDependencies("Debug")
+        FBS.IncludeDependencies(FBS.Configurations.Debug)
 
     filter "configurations:Release"
-        IncludeDependencies("Release")
+        FBS.IncludeDependencies(FBS.Configurations.Release)
 
     filter "configurations:Dist"
-        IncludeDependencies("Dist")
+        FBS.IncludeDependencies(FBS.Configurations.Dist)
 
     group "Wandelt/Dependencies"
         include "modules/Logger/Build-Logger.lua"

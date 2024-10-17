@@ -1,4 +1,4 @@
-include "SolutionItems.lua"
+include "vendor/FancyBuildSystem/FancyBuildSystem.lua"
 include "Dependencies.lua"
 
 workspace "WandeltLanguage"

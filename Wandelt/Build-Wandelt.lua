@@ -23,13 +23,10 @@ project "Wandelt"
     links { "WandeltCore" }
 
     filter "configurations:Debug"
-        IncludeDependencies("Debug")
-        ProcessDependencies("Debug")
+        FBS.ProcessDependencies(FBS.Configurations.Debug)
 
     filter "configurations:Release"
-        IncludeDependencies("Release")
-        ProcessDependencies("Release")
+        FBS.ProcessDependencies(FBS.Configurations.Release)
 
     filter "configurations:Dist"
-        IncludeDependencies("Dist")
-        ProcessDependencies("Dist")
+        FBS.ProcessDependencies(FBS.Configurations.Dist)

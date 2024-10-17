@@ -1,3 +1,6 @@
 [submodule "WandeltCore/modules/Logger"]
 	path = WandeltCore/modules/Logger
 	url = https://github.com/SW-II/Logger.git
+[submodule "vendor/FancyBuildSystem"]
+	path = vendor/FancyBuildSystem
+	url = https://github.com/Tycjan-Fortuna-IT/FancyBuildSystem.git
